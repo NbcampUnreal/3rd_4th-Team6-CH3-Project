@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// 무기 시연용 게임모드 헤더
 
 #pragma once
 
@@ -13,5 +13,7 @@ UCLASS()
 class GIVEMETHEMONEY_API AGM_Dummy_GameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+public :
+	AGM_Dummy_GameModeBase();
+
 };

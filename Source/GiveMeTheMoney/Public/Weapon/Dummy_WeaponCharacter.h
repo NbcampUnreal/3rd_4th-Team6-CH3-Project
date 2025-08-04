@@ -1,10 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+//시연용 더미 캐릭터 헤더
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+//#include "GameFramework/CharacterMovementComponent.h"
 #include "Dummy_WeaponCharacter.generated.h"
+
+class USpringArmComponent;	// 스프링암 컴포넌트 전방선언
+class UCameraComponent;	// 카메라 컴포넌트 전방선언
+struct FInputActionValue;	// 인풋액션 전방선언
 
 UCLASS()
 class GIVEMETHEMONEY_API ADummy_WeaponCharacter : public ACharacter
@@ -15,15 +19,34 @@ public:
 	// Sets default values for this character's properties
 	ADummy_WeaponCharacter();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dummy_WeaponCharcter")
+	USpringArmComponent* SpringArmComp;	// 스프링암 컴포넌트
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dummy_WeaponCharcter")
+	UCameraComponent* CameraComp;	// 카메라 컴포넌트
+
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
+	// 입력 바인딩 함수
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	//Input
+public:
+
+	UFUNCTION()
+	void Move(const FInputActionValue& value);	// 이동을 담당할 입력 이벤트
+	UFUNCTION()
+	void Look(const FInputActionValue& value);	// 시선 입력 이벤트
+	UFUNCTION()
+	void JumpEvent(const FInputActionValue& value);	// 점프 이벤트
+	UFUNCTION()
+	void Shot(const FInputActionValue& value);	// 무기 공격 이벤트
+	UFUNCTION()
+	void Reload(const FInputActionValue& value);	// 재장전 이벤트
+	UFUNCTION()
+	void ChangeWeaponOne(const FInputActionValue& value);	// 1번 무기 변경 이벤트
+	UFUNCTION()
+	void ChangeWeaponTwo(const FInputActionValue& value);	// 2번 무기 변경 이벤트
+
+public:
+	UPROPERTY(EditAnywhere, Category = "Dummy_WeaponCharcter")
+	float MoveSpeed;	// 이동속도
 };
