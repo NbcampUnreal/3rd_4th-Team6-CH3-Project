@@ -7,7 +7,7 @@
 AGM_BaseWeapon::AGM_BaseWeapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
@@ -18,10 +18,6 @@ void AGM_BaseWeapon::BeginPlay()
 	
 }
 
-// Called every frame
-void AGM_BaseWeapon::Tick(float DeltaTime)
+void AGM_BaseWeapon::Activate()
 {
-	Super::Tick(DeltaTime);
-
 }
-
