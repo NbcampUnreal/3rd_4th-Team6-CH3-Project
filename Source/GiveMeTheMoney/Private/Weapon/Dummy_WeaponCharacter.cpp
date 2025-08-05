@@ -1,6 +1,12 @@
 // 시연용 더미 캐릭터
+//2025_08_04
+// Weapon 클래스의 Activate 호출하도록 입력 바인딩 구현는중 
+// 헤더 파일에서 CurrentWepon을 참조해서 해보자
+
 #include "Weapon/Dummy_WeaponCharacter.h"
 #include "Weapon/GM_Dummy_PlayerController.h"
+#include "Weapon/GM_Weapon_Rifle.h"
+#include "Weapon/GM_Weapon_Shotgun.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"	// 스프링 암 컴포넌트 헤더
@@ -106,6 +112,27 @@ void ADummy_WeaponCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	}
 }
 
+void ADummy_WeaponCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Rifle = GetWorld()->SpawnActor<AGM_Weapon_Rifle>(	// Rifle 생성
+		AGM_Weapon_Rifle::StaticClass(),
+		GetActorLocation(),
+		FRotator::ZeroRotator
+	);
+	Shotgun = GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(	// Shotgun 생성
+		AGM_Weapon_Shotgun::StaticClass(),
+		GetActorLocation(),
+		FRotator::ZeroRotator
+	);
+
+	WeaponInventory.Add(Rifle);
+	WeaponInventory.Add(Shotgun);
+
+	CurrentWeapon = WeaponInventory[0];	// 시작무기는 라이플
+}
+
 // 이동 입력 이벤트 
 void ADummy_WeaponCharacter::Move(const FInputActionValue& value)
 {
@@ -128,6 +155,7 @@ void ADummy_WeaponCharacter::JumpEvent(const FInputActionValue& value)
 void ADummy_WeaponCharacter::Shot(const FInputActionValue& value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Shot!!!")));
+	
 }
 
 // Reload 입력 이벤트
@@ -140,10 +168,24 @@ void ADummy_WeaponCharacter::Reload(const FInputActionValue& value)
 void ADummy_WeaponCharacter::ChangeWeaponOne(const FInputActionValue& value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Magenta, FString::Printf(TEXT("ChangeWeaponOne!!")));
+	SwitchWeapon(0);	// Rifle 무기 변경
 }
 
 // 2번 무기 변경 입력 이벤트
 void ADummy_WeaponCharacter::ChangeWeaponTwo(const FInputActionValue& value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Magenta, FString::Printf(TEXT("ChangeWeaponTwo!!")));
+	SwitchWeapon(1);	// Shotgun 무기 변경
+}
+
+void ADummy_WeaponCharacter::SwitchWeapon(int32 WeaponIndex)
+{
+	if (WeaponInventory.IsValidIndex(WeaponIndex))
+	{
+		CurrentWeapon = WeaponInventory[WeaponIndex];	// 무기 변경
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->Activate();	// 무기에 맞는 Activate 실행
+		}
+	}
 }

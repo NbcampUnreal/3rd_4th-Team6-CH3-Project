@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-//#include "GameFramework/CharacterMovementComponent.h"
+#include "Weapon/GM_BaseWeapon.h"
 #include "Dummy_WeaponCharacter.generated.h"
 
 class USpringArmComponent;	// 스프링암 컴포넌트 전방선언
@@ -24,12 +24,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dummy_WeaponCharcter")
 	UCameraComponent* CameraComp;	// 카메라 컴포넌트
 
+	TArray<AGM_BaseWeapon*> WeaponInventory;	// 무기 배열
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	AGM_BaseWeapon* CurrentWeapon;	// 무기
+	AGM_BaseWeapon* Rifle;	
+	AGM_BaseWeapon* Shotgun;
+
+
 protected:
 	// 입력 바인딩 함수
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	//Input
 public:
+	virtual void BeginPlay() override;
 
 	UFUNCTION()
 	void Move(const FInputActionValue& value);	// 이동을 담당할 입력 이벤트
@@ -42,11 +50,14 @@ public:
 	UFUNCTION()
 	void Reload(const FInputActionValue& value);	// 재장전 이벤트
 	UFUNCTION()
-	void ChangeWeaponOne(const FInputActionValue& value);	// 1번 무기 변경 이벤트
+	void ChangeWeaponOne(const FInputActionValue& value);	// 1번 무기 변경
 	UFUNCTION()
-	void ChangeWeaponTwo(const FInputActionValue& value);	// 2번 무기 변경 이벤트
+	void ChangeWeaponTwo(const FInputActionValue& value);	// 2번 무기 변경
 
 public:
+	
+	void SwitchWeapon(int32 WeaponIndex);	// 무기 변경
+	
 	UPROPERTY(EditAnywhere, Category = "Dummy_WeaponCharcter")
 	float MoveSpeed;	// 이동속도
 };
