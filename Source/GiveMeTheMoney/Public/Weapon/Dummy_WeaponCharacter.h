@@ -44,7 +44,7 @@ public:
 	UFUNCTION()
 	void Look(const FInputActionValue& value);	// 시선 입력 이벤트
 	UFUNCTION()
-	void JumpEvent(const FInputActionValue& value);	// 점프 이벤트
+	void StartJumpEvent(const FInputActionValue& value);	// 점프 이벤트
 	UFUNCTION()
 	void Shot(const FInputActionValue& value);	// 무기 공격 이벤트
 	UFUNCTION()
