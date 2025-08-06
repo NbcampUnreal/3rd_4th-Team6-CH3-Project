@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Weapon/GM_BaseWeapon.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Weapon/GM_BaseWeapon.h"
 #include "GM_Weapon_Rifle.generated.h"
 
 class UStaticMeshComponent;
@@ -33,6 +34,8 @@ protected:
 	int32 MaxAmmo = 30;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Stats")
 	int32 CurrentAmmo;
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	UNiagaraSystem* MuzzleFlashEffect;
 
 private:
 	float TimeBetweenShots;

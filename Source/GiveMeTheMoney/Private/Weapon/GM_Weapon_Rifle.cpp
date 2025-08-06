@@ -90,6 +90,16 @@ void AGM_Weapon_Rifle::Activate()
         // 7. 3초 뒤에 자동으로 사라지도록 설정 (메모리 관리)
         BulletActor->SetLifeSpan(3.0f);
     }
+
+    if (MuzzleFlashEffect)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            MuzzleFlashEffect,
+            SpawnLocation,
+            SpawnRotation
+        );
+    }
 }
 
 
