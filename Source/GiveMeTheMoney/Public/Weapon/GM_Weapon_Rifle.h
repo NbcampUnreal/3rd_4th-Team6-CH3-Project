@@ -15,27 +15,41 @@ UCLASS()
 class GIVEMETHEMONEY_API AGM_Weapon_Rifle : public AGM_BaseWeapon
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AGM_Weapon_Rifle();
 	virtual void Activate() override;
-	
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* WeaponMesh;
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+
+	// 블루프린트에서 총알의 StaticMesh를 설정할 수 있도록 합니다.
+	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* BulletMeshAsset;
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+
+	// 블루프린트에서 총알의 Material을 설정할 수 있도록 합니다.
+	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* BulletMaterialAsset;
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon Stats")
-	float FireRatePerSecond = 5.0f;
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon Stats")
-	int32 MaxAmmo = 30;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Stats")
+
+	UPROPERTY(EditDefaultsOnly)
+	float FireRatePerSecond;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaxAmmo;
+
+	UPROPERTY(VisibleAnywhere)
 	int32 CurrentAmmo;
-	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+
+	UPROPERTY(EditDefaultsOnly)
 	UNiagaraSystem* MuzzleFlashEffect;
+    
+	UPROPERTY(EditDefaultsOnly)
+	float DamageAmount;
+
+	// OnBulletHit 함수를 protected 섹션에 선언합니다.
+	UFUNCTION()
+	void OnBulletHit(const FHitResult& HitResult);
 
 private:
 	float TimeBetweenShots;
