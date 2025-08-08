@@ -167,12 +167,7 @@ void ADummy_WeaponCharacter::Look(const FInputActionValue& value)
 // 점프  이벤트
 void ADummy_WeaponCharacter::StartJumpEvent(const FInputActionValue& value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Jump!!!")));
 	Jump();
-	/*if (value.Get<bool>())	
-	{
-		Jump();
-	}*/
 }
 
 // Shot 입력 이벤트
