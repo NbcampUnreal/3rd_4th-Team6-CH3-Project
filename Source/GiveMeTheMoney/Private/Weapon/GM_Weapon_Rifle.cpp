@@ -6,13 +6,17 @@
 #include "GameFramework/Controller.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Weapon/WeaponProjectile.h"
 #include "Materials/MaterialInterface.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h" // UGameplayStatics를 사용하기 위해 추가
 
 AGM_Weapon_Rifle::AGM_Weapon_Rifle()
 {
-    WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+    // SceneComponent 를 Root로 지정
+    RootSceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComp"));
+    SetRootComponent(RootSceneComp);
+   /* WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
     SetRootComponent(WeaponMesh);
 
     MaxAmmo = 30;
@@ -21,79 +25,99 @@ AGM_Weapon_Rifle::AGM_Weapon_Rifle()
     TimeBetweenShots = 1.0f / FireRatePerSecond;
     LastFireTime = 0.f;
     
-    DamageAmount = 8.0f;
+    DamageAmount = 8.0f;*/
 }
 
 void AGM_Weapon_Rifle::Activate()
 {
-    if (CurrentAmmo <= 0 || GetWorld()->GetTimeSeconds() < LastFireTime + TimeBetweenShots)
-        return;
+    //if (CurrentAmmo <= 0 || GetWorld()->GetTimeSeconds() < LastFireTime + TimeBetweenShots)
+    //    return;
 
-    CurrentAmmo--;
-    LastFireTime = GetWorld()->GetTimeSeconds();
+    //CurrentAmmo--;
+    //LastFireTime = GetWorld()->GetTimeSeconds();
 
-    AActor* MyOwner = GetOwner();
-    if (!MyOwner) return;
+    //AActor* MyOwner = GetOwner();
+    //if (!MyOwner) return;
 
-    AController* OwnerController = MyOwner->GetInstigatorController();
-    if (!OwnerController) return;
+    //AController* OwnerController = MyOwner->GetInstigatorController();
+    //if (!OwnerController) return;
 
-    FVector SpawnLocation = WeaponMesh->GetSocketLocation("MuzzleSocket");
-    FRotator SpawnRotation = OwnerController->GetControlRotation();
+    //FVector SpawnLocation = WeaponMesh->GetSocketLocation("MuzzleSocket");
+    //FRotator SpawnRotation = OwnerController->GetControlRotation();
 
-    AActor* BulletActor = GetWorld()->SpawnActor<AActor>(AActor::StaticClass(), SpawnLocation, SpawnRotation);
-    if (BulletActor)
-    {
-        UStaticMeshComponent* BulletMesh = NewObject<UStaticMeshComponent>(BulletActor, TEXT("BulletMesh"));
-        BulletMesh->RegisterComponent();
-        BulletActor->SetRootComponent(BulletMesh);
-        BulletMesh->SetStaticMesh(BulletMeshAsset);
-        BulletMesh->SetWorldScale3D(FVector(0.1f));
-        BulletMesh->SetCollisionProfileName(TEXT("BlockAll"));
-        if (BulletMaterialAsset)
-            BulletMesh->SetMaterial(0, BulletMaterialAsset);
+    //AActor* BulletActor = GetWorld()->SpawnActor<AActor>(AActor::StaticClass(), SpawnLocation, SpawnRotation);
+    //if (BulletActor)
+    //{
+    //    UStaticMeshComponent* BulletMesh = NewObject<UStaticMeshComponent>(BulletActor, TEXT("BulletMesh"));
+    //    BulletMesh->RegisterComponent();
+    //    BulletActor->SetRootComponent(BulletMesh);
+    //    BulletMesh->SetStaticMesh(BulletMeshAsset);
+    //    BulletMesh->SetWorldScale3D(FVector(0.1f));
+    //    BulletMesh->SetCollisionProfileName(TEXT("BlockAll"));
+    //    if (BulletMaterialAsset)
+    //        BulletMesh->SetMaterial(0, BulletMaterialAsset);
 
-        UProjectileMovementComponent* BulletMovement = NewObject<UProjectileMovementComponent>(BulletActor, TEXT("BulletMovement"));
-        BulletMovement->RegisterComponent();
-        BulletMovement->SetUpdatedComponent(BulletMesh);
-        BulletMovement->InitialSpeed = 5000.f;
-        BulletMovement->MaxSpeed = 5000.f;
-        BulletMovement->bRotationFollowsVelocity = true;
-        BulletMovement->ProjectileGravityScale = 0.f;
-        
-        // 충돌 발생 시 OnProjectileStop 델리게이트를 바인딩하여 피해 로직을 실행합니다.
-        BulletMovement->OnProjectileStop.AddDynamic(this, &AGM_Weapon_Rifle::OnBulletHit);
+    //    UProjectileMovementComponent* BulletMovement = NewObject<UProjectileMovementComponent>(BulletActor, TEXT("BulletMovement"));
+    //    BulletMovement->RegisterComponent();
+    //    BulletMovement->SetUpdatedComponent(BulletMesh);
+    //    BulletMovement->InitialSpeed = 5000.f;
+    //    BulletMovement->MaxSpeed = 5000.f;
+    //    BulletMovement->bRotationFollowsVelocity = true;
+    //    BulletMovement->ProjectileGravityScale = 0.f;
+    //    
+    //    // 충돌 발생 시 OnProjectileStop 델리게이트를 바인딩하여 피해 로직을 실행합니다.
+    //    BulletMovement->OnProjectileStop.AddDynamic(this, &AGM_Weapon_Rifle::OnBulletHit);
 
-        BulletActor->SetLifeSpan(3.0f);
-    }
+    //    BulletActor->SetLifeSpan(3.0f);
+    /*}
     
     if (MuzzleFlashEffect)
     {
         UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlashEffect, SpawnLocation, SpawnRotation);
-    }
+    }*/
 }
 
-
-// OnBulletHit 함수를 별도로 정의합니다.
-void AGM_Weapon_Rifle::OnBulletHit(const FHitResult& HitResult)
+// 총알 발사 
+void AGM_Weapon_Rifle::ShootBullet()
 {
-    if (AActor* HitActor = HitResult.GetActor())
+    if (RifleProjectileClass == nullptr)
     {
-        // UGameplayStatics::ApplyDamage 함수를 호출하여 피해를 입힙니다.
-        UGameplayStatics::ApplyDamage(
-            HitActor,
-            DamageAmount,
-            GetInstigatorController(),
-            this,
-            nullptr);
+        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, FString::Printf(TEXT("RifleClass Null !!!")));
+        return;
     }
-    
-    // 충돌 후 총알 액터 파괴
-    if (AActor* BulletActor = HitResult.GetActor())
+    FVector SpawnLocation = GetActorLocation();
+    FRotator SpawnRotation = GetActorRotation();
+
+    // 총알 스폰
+    AWeaponProjectile* Projectile =
+        GetWorld()->SpawnActor<AWeaponProjectile>(RifleProjectileClass, SpawnLocation, SpawnRotation);
+    if (Projectile)
     {
-        BulletActor->Destroy();
+        Projectile->FireIndirection(GetActorForwardVector());   //현재 액터의 전방으로 총알 발사
     }
 }
+
+
+//// OnBulletHit 함수를 별도로 정의합니다.
+//void AGM_Weapon_Rifle::OnBulletHit(const FHitResult& HitResult)
+//{
+//    if (AActor* HitActor = HitResult.GetActor())
+//    {
+//        // UGameplayStatics::ApplyDamage 함수를 호출하여 피해를 입힙니다.
+//        UGameplayStatics::ApplyDamage(
+//            HitActor,
+//            DamageAmount,
+//            GetInstigatorController(),
+//            this,
+//            nullptr);
+//    }
+//    
+//    // 충돌 후 총알 액터 파괴
+//    if (AActor* BulletActor = HitResult.GetActor())
+//    {
+//        BulletActor->Destroy();
+//    }
+//}
 
 
 

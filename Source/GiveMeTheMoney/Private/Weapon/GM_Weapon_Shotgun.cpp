@@ -25,7 +25,7 @@ void AGM_Weapon_Shotgun::Activate()
 // ÃÑ¾Ë ½ºÆù 
 void AGM_Weapon_Shotgun::ShootBullet()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("ShootBullet!!!")));
+	//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("ShootBullet!!!")));
 	if (ShotgunProjectileClass == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, FString::Printf(TEXT("Class Null !!!")));

@@ -18,38 +18,47 @@ class GIVEMETHEMONEY_API AGM_Weapon_Rifle : public AGM_BaseWeapon
 
 public:
 	AGM_Weapon_Rifle();
+
+	UPROPERTY(EditAnywhere, Category="Weapon")
+	TSubclassOf<class AWeaponProjectile> RifleProjectileClass;	// 라이플 클래스
+
+	UPROPERTY(VisibleAnywhere, Category = "RootSecne")
+	USceneComponent* RootSceneComp;		// Root SceneComp
+
 	virtual void Activate() override;
-
+	virtual void ShootBullet() override;	//총알 발사
 protected:
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* WeaponMesh;
+	//UPROPERTY(VisibleAnywhere)
+	//UStaticMeshComponent* WeaponMesh;
 
-	// 블루프린트에서 총알의 StaticMesh를 설정할 수 있도록 합니다.
-	UPROPERTY(EditDefaultsOnly)
-	UStaticMesh* BulletMeshAsset;
+	//// 블루프린트에서 총알의 StaticMesh를 설정할 수 있도록 합니다.
+	//UPROPERTY(EditDefaultsOnly)
+	//UStaticMesh* BulletMeshAsset;
 
-	// 블루프린트에서 총알의 Material을 설정할 수 있도록 합니다.
-	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* BulletMaterialAsset;
+	//// 블루프린트에서 총알의 Material을 설정할 수 있도록 합니다.
+	//UPROPERTY(EditDefaultsOnly)
+	//UMaterialInterface* BulletMaterialAsset;
 
-	UPROPERTY(EditDefaultsOnly)
-	float FireRatePerSecond;
+	//UPROPERTY(EditDefaultsOnly)
+	//float FireRatePerSecond;
 
-	UPROPERTY(EditDefaultsOnly)
-	int32 MaxAmmo;
+	//UPROPERTY(EditDefaultsOnly)
+	//int32 MaxAmmo;
 
-	UPROPERTY(VisibleAnywhere)
-	int32 CurrentAmmo;
+	//UPROPERTY(VisibleAnywhere)
+	//int32 CurrentAmmo;
 
-	UPROPERTY(EditDefaultsOnly)
-	UNiagaraSystem* MuzzleFlashEffect;
-    
-	UPROPERTY(EditDefaultsOnly)
-	float DamageAmount;
+	//UPROPERTY(EditDefaultsOnly)
+	//UNiagaraSystem* MuzzleFlashEffect;
+ //   
+	//UPROPERTY(EditDefaultsOnly)
+	//float DamageAmount;
 
 	// OnBulletHit 함수를 protected 섹션에 선언합니다.
-	UFUNCTION()
-	void OnBulletHit(const FHitResult& HitResult);
+	/*UFUNCTION()
+	void OnBulletHit(const FHitResult& HitResult);*/
+
+	
 
 private:
 	float TimeBetweenShots;
