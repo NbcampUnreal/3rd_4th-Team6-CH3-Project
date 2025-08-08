@@ -125,10 +125,14 @@ void ADummy_WeaponCharacter::BeginPlay()
 	//);
 	
 	UpdateMuzzleTransform();
-	WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Rifle>(Rifle, MuzzleSocketLocation, MuzzleSocketRotation));
-	WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(Shotgun, MuzzleSocketLocation, MuzzleSocketRotation));
+	// Rifle 와 Shotgun 클래스가 존재한다면 스폰
+	if (Rifle && Shotgun) 
+	{
+		WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Rifle>(Rifle, MuzzleSocketLocation, MuzzleSocketRotation));
+		WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(Shotgun, MuzzleSocketLocation, MuzzleSocketRotation));
 	
-	CurrentWeapon = WeaponInventory[1];	// 시작무기는 샷건
+		CurrentWeapon = WeaponInventory[1];	// 시작무기는 샷건
+	}
 }
 
 // 이동 입력 이벤트 
