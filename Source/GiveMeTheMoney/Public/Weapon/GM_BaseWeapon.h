@@ -15,7 +15,8 @@ public:
 	AGM_BaseWeapon();
 
 	     UFUNCTION(BlueprintCallable, Category = "Weapon")
-	     virtual void Activate();
+	     virtual void Activate();	// 무기 활성화 시 타입에 맞는 이펙트 스폰
+		 virtual void ShootBullet();	// 무기에 맞는 탄환 발사
 	
  protected:
 	    virtual void BeginPlay() override;

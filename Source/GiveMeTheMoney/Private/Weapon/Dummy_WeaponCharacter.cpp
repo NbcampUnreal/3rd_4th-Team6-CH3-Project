@@ -113,21 +113,22 @@ void ADummy_WeaponCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Rifle = GetWorld()->SpawnActor<AGM_Weapon_Rifle>(	// Rifle 생성
-		AGM_Weapon_Rifle::StaticClass(),
-		GetActorLocation(),
-		FRotator::ZeroRotator
-	);
-	Shotgun = GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(	// Shotgun 생성
-		AGM_Weapon_Shotgun::StaticClass(),
-		GetActorLocation(),
-		FRotator::ZeroRotator
-	);
-
-	WeaponInventory.Add(Rifle);
-	WeaponInventory.Add(Shotgun);
-
-	CurrentWeapon = WeaponInventory[0];	// 시작무기는 라이플
+	//Rifle = GetWorld()->SpawnActor<AGM_Weapon_Rifle>(	// Rifle 생성
+	//	AGM_Weapon_Rifle::StaticClass(),
+	//	GetMesh()->GetSocketLocation("Muzzle"),	//총구 위치와 회전값
+	//	GetMesh()->GetSocketRotation("Muzzle")
+	//);
+	//Shotgun = GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(	// Shotgun 생성
+	//	AGM_Weapon_Shotgun::StaticClass(),
+	//	GetMesh()->GetSocketLocation("Muzzle"),	//총구 위치와 회전값
+	//	GetMesh()->GetSocketRotation("Muzzle")
+	//);
+	
+	UpdateMuzzleTransform();
+	WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Rifle>(Rifle, MuzzleSocketLocation, MuzzleSocketRotation));
+	WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(Shotgun, MuzzleSocketLocation, MuzzleSocketRotation));
+	
+	CurrentWeapon = WeaponInventory[1];	// 시작무기는 샷건
 }
 
 // 이동 입력 이벤트 
@@ -173,7 +174,15 @@ void ADummy_WeaponCharacter::StartJumpEvent(const FInputActionValue& value)
 // Shot 입력 이벤트
 void ADummy_WeaponCharacter::Shot(const FInputActionValue& value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Shot!!!")));
+	if (CurrentWeapon)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Shot!!!")));
+		// 총알 스폰 위치 업데이트 및 발사
+		UpdateMuzzleTransform();
+		CurrentWeapon->SetActorLocation(MuzzleSocketLocation);
+		CurrentWeapon->SetActorRotation(MuzzleSocketRotation);
+		CurrentWeapon->ShootBullet();	// 클릭시 선택한 무기 (현재는 Shotgun) 발사
+	}
 }
 
 // Reload 입력 이벤트
@@ -207,4 +216,11 @@ void ADummy_WeaponCharacter::SwitchWeapon(int32 WeaponIndex)
 			CurrentWeapon->Activate();	// 무기에 맞는 Activate 실행
 		}
 	}
+}
+
+// 총구 위치 업데이트
+void ADummy_WeaponCharacter::UpdateMuzzleTransform()
+{
+	MuzzleSocketLocation = GetMesh()->GetSocketLocation("Muzzle");
+	MuzzleSocketRotation = GetMesh()->GetSocketRotation("Muzzle");
 }

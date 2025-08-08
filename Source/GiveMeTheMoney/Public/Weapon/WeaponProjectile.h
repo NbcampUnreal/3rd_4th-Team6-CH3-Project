@@ -1,10 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WeaponProjectile.generated.h"
+
+class USphereComponent;	// Sphere, Projectile 전방 선언
+class UProjectileMovementComponent;
 
 UCLASS()
 class GIVEMETHEMONEY_API AWeaponProjectile : public AActor
@@ -12,15 +13,31 @@ class GIVEMETHEMONEY_API AWeaponProjectile : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+
 	AWeaponProjectile();
 
 protected:
-	// Called when the game starts or when spawned
+
 	virtual void BeginPlay() override;
+	float DamageAmount = 10.0f;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MeshComponent")
+	UStaticMeshComponent* MeshComp;	// 스태틱 메시 컴포넌트
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MeshComponent")
+	USphereComponent* CollisionComp;	// 콜리전 컴포넌트
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MeshComponent")
+	UProjectileMovementComponent* BulletProjectileMovement;	// 프로젝타일(발사움직임) 컴포넌트
+	
+	// Overlap 시 OnHitBullet 함수 실행
+	UFUNCTION()
+	void OnHitBullet(UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+
+	void FireIndirection(const FVector& ShootDirection);	// 나아갈 방향조절
 };

@@ -24,12 +24,18 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dummy_WeaponCharcter")
 	UCameraComponent* CameraComp;	// 카메라 컴포넌트
 
+	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TArray<AGM_BaseWeapon*> WeaponInventory;	// 무기 배열
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	AGM_BaseWeapon* CurrentWeapon;	// 무기
-	AGM_BaseWeapon* Rifle;	
-	AGM_BaseWeapon* Shotgun;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<class AGM_Weapon_Rifle> Rifle;	//WeaponRifle 클래스만 할당
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<class AGM_Weapon_Shotgun> Shotgun;	//WeaponShotgun 클래스만 할당
 
+	// 총구 위치 ,회전값
+	FVector MuzzleSocketLocation;
+	FRotator MuzzleSocketRotation;
 
 protected:
 	// 입력 바인딩 함수
@@ -57,6 +63,7 @@ public:
 public:
 	
 	void SwitchWeapon(int32 WeaponIndex);	// 무기 변경
+	void UpdateMuzzleTransform();	// 총구 위치 업데이트
 	
 	UPROPERTY(EditAnywhere, Category = "Dummy_WeaponCharcter")
 	float MoveSpeed;	// 이동속도
