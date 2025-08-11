@@ -8,7 +8,11 @@ public class GiveMeTheMoney : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
+<<<<<<< HEAD
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "NavigationSystem", "GameplayTasks", "AIModule" });
+=======
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput","Niagara" });
+>>>>>>> b118385e7448071f55202b481d969547d56ae632
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
