@@ -9,18 +9,15 @@
 UCLASS()
 class GIVEMETHEMONEY_API AGM_BaseWeapon : public AActor
 {
-	GENERATED_BODY()
-	
+	GENERATED_BODY()	
+
 public:	
-	// Sets default values for this actor's properties
 	AGM_BaseWeapon();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	     UFUNCTION(BlueprintCallable, Category = "Weapon")
+	     virtual void Activate();	// 무기 활성화 시 타입에 맞는 이펙트 스폰
+		 virtual void ShootBullet();	// 무기에 맞는 탄환 발사
+	
+ protected:
+	    virtual void BeginPlay() override;
 };
