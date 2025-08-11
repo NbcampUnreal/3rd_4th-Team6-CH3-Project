@@ -10,7 +10,11 @@ AGM_Controller_Character::AGM_Controller_Character() //»ý¼ºÀÚ
     MoveAction(nullptr),
     JumpAction(nullptr),
     LookAction(nullptr),
-    SprintAction(nullptr)
+    SprintAction(nullptr),
+    FireAction(nullptr),
+    CrouchAction(nullptr),
+    EquipWeapon1Action(nullptr),
+    EquipWeapon2Action(nullptr)
     //HUDWidgetInstance(nullptr)
 {
 }

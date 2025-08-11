@@ -22,8 +22,8 @@ AGM_Character::AGM_Character()
 	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);	//카메라 컴포넌트를 스프링암 끝 지점 부착
 	CameraComp->bUsePawnControlRotation = false;	// 컨트롤러로 카메라 회전 못하게 설정
 
-	NormalSpeed = 600.0f;	// 현재 속도 
-	SprintSpeedMultiplier = 2.0f;	// 곱해질 크기
+	NormalSpeed = 200.0f;	// 현재 속도 
+	SprintSpeedMultiplier = 3.0f;	// 곱해질 크기
 	SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 
 	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
@@ -91,6 +91,40 @@ void AGM_Character::StopSprint(const FInputActionValue& value)
 	}
 }
 
+void AGM_Character::Crouch(const FInputActionValue& value)
+{
+	if (value.Get<bool>()) // 웅크리기 키가 눌렸을 때
+	{
+		if (bIsCrouching)
+		{
+			StopCrouch();
+		}
+		else
+		{
+			StartCrouch();
+		}
+	}
+}
+
+void AGM_Character::StartCrouch()
+{
+	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
+	{
+		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
+		bIsCrouching = true;
+		// 필요하다면, 여기에 웅크리기 애니메이션 재생 로직을 추가
+		UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));
+	}
+}
+
+void AGM_Character::StopCrouch()
+{
+	ACharacter::UnCrouch(); // 웅크리기 해제
+	bIsCrouching = false;
+	// 필요하다면, 여기에 웅크리기 해제 애니메이션 재생 로직을 추가
+	UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));
+}
+
 // 입력 받은 값을 어떻게 처리 할 지 구현하는 곳
 void AGM_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -154,6 +188,49 @@ void AGM_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 					&AGM_Character::StopSprint	// 질주 키를 떼었을 때 입력 처리
 				);
 			}
+			if (PlayerController->CrouchAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->CrouchAction,
+					ETriggerEvent::Triggered, // Triggered 이벤트를 사용
+					this,
+					&AGM_Character::Crouch
+				);
+			}
+			if (PlayerController->FireAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->FireAction,
+					ETriggerEvent::Started, // 키를 누르는 순간
+					this,
+					&AGM_Character::Fire
+				);
+				EnhancedInput->BindAction(
+					PlayerController->FireAction,
+					ETriggerEvent::Completed, // 키를 떼는 순간
+					this,
+					&AGM_Character::FireComplete
+				);
+			}
+			if (PlayerController->EquipWeapon1Action)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->EquipWeapon1Action,
+					ETriggerEvent::Started, // 키가 눌렸을 때
+					this,
+					&AGM_Character::EquipWeapon1
+				);
+			}
+
+			if (PlayerController->EquipWeapon2Action)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->EquipWeapon2Action,
+					ETriggerEvent::Started, // 키가 눌렸을 때
+					this,
+					&AGM_Character::EquipWeapon2
+				);
+			}
 		}
 	}
 }
@@ -185,6 +262,34 @@ float AGM_Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	}
 
 	return 0.0f;
+}
+
+void AGM_Character::Fire(const FInputActionValue& Value)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "Fire");
+}
+
+void AGM_Character::FireComplete(const FInputActionValue& Value)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, "Fire Compelete");
+}
+
+void AGM_Character::EquipWeapon1(const FInputActionValue& value)
+{
+	if (value.Get<bool>())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "1번 무기 장착");
+		// 여기에 실제 무기 교체 로직을 구현합니다.
+	}
+}
+
+void AGM_Character::EquipWeapon2(const FInputActionValue& value)
+{
+	if (value.Get<bool>())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "2번 무기 장착");
+		// 여기에 실제 무기 교체 로직을 구현합니다.
+	}
 }
 
 void AGM_Character::OnDeath()

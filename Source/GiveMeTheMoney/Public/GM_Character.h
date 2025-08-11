@@ -33,6 +33,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")// 블루프린트에서 읽기 전용으로 사용 가능
 		void AddHealth(float Amount);// 체력을 회복시키는 함수
 
+	UFUNCTION(BlueprintCallable, Category = "Crouch")
+	void StartCrouch(); // 웅크리기 시작
+	UFUNCTION(BlueprintCallable, Category = "Crouch")
+	void StopCrouch();  // 웅크리기 멈춤
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")// 에디터에서 조정 가능
 		float MaxHealth;// 최대 체력
@@ -64,10 +69,30 @@ protected:
 	UFUNCTION()
 	void Look(const FInputActionValue& value);// 마우스 입력(시선 처리)
 
+	void Fire(const FInputActionValue& value);// 총기 발사 로그
+	void FireComplete(const FInputActionValue& value);
+	void Crouch(const FInputActionValue& value);
+
+	// 웅크리기 상태를 추적할 변수
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
+	bool bIsCrouching = false; // 현재 웅크린 상태인지
+
 	void OnDeath();// 캐릭터가 죽었을 때 호출되는 함수
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float NormalSpeed; // 일반적인 걷기 속도
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float SprintSpeed; // 질주 속도
+
+	// 무기 교체 함수
+	UFUNCTION()
+	void EquipWeapon1(const FInputActionValue& value); // 1번 무기 장착
+	UFUNCTION()
+	void EquipWeapon2(const FInputActionValue& value); // 2번 무기 장착
+
 private:
-	float NormalSpeed;// 현재의 일반 속도
+	//float NormalSpeed;// 현재의 일반 속도
 	float SprintSpeedMultiplier;// Normal에서 몇배를 곱해줄지 설정하는 변수
-	float SprintSpeed;// 질주 속도 (Normal * Multiplier)
+	//float SprintSpeed;// 질주 속도 (Normal * Multiplier)
 };

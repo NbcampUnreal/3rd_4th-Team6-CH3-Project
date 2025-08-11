@@ -32,6 +32,18 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
     UInputAction* SprintAction; // 이동 액션
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+    UInputAction* FireAction; // 발사 액션
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+    UInputAction* CrouchAction; // 웅크리기 액션
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+    UInputAction* EquipWeapon1Action;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+    UInputAction* EquipWeapon2Action;
+
     //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
     //TSubclassOf<UUserWidget> HUDWidgetClass;    //UI 표시 위젯
     //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
