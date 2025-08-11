@@ -31,7 +31,7 @@ AWeaponProjectile::AWeaponProjectile()
 void AWeaponProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, FString::Printf(TEXT("SpawnProjectile!!!")));
+	//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, FString::Printf(TEXT("SpawnProjectile!!!")));
 }
 
 void AWeaponProjectile::OnHitBullet(UPrimitiveComponent* OverlappedComp, 

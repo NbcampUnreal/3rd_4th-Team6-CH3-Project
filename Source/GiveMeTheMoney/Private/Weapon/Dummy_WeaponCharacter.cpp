@@ -124,7 +124,7 @@ void ADummy_WeaponCharacter::BeginPlay()
 	//	GetMesh()->GetSocketRotation("Muzzle")
 	//);
 	
-	UpdateMuzzleTransform();
+	UpdateMuzzleTransform();		// 총구 위치와 회전값 업데이트
 	// Rifle 와 Shotgun 클래스가 존재한다면 스폰
 	if (Rifle && Shotgun) 
 	{

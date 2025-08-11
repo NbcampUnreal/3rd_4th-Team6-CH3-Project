@@ -27,37 +27,6 @@ public:
 
 	virtual void Activate() override;
 	virtual void ShootBullet() override;	//총알 발사
-protected:
-	//UPROPERTY(VisibleAnywhere)
-	//UStaticMeshComponent* WeaponMesh;
-
-	//// 블루프린트에서 총알의 StaticMesh를 설정할 수 있도록 합니다.
-	//UPROPERTY(EditDefaultsOnly)
-	//UStaticMesh* BulletMeshAsset;
-
-	//// 블루프린트에서 총알의 Material을 설정할 수 있도록 합니다.
-	//UPROPERTY(EditDefaultsOnly)
-	//UMaterialInterface* BulletMaterialAsset;
-
-	//UPROPERTY(EditDefaultsOnly)
-	//float FireRatePerSecond;
-
-	//UPROPERTY(EditDefaultsOnly)
-	//int32 MaxAmmo;
-
-	//UPROPERTY(VisibleAnywhere)
-	//int32 CurrentAmmo;
-
-	//UPROPERTY(EditDefaultsOnly)
-	//UNiagaraSystem* MuzzleFlashEffect;
- //   
-	//UPROPERTY(EditDefaultsOnly)
-	//float DamageAmount;
-
-	// OnBulletHit 함수를 protected 섹션에 선언합니다.
-	/*UFUNCTION()
-	void OnBulletHit(const FHitResult& HitResult);*/
-
 	
 
 private:

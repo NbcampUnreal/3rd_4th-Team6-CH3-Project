@@ -37,7 +37,7 @@ void AGM_Weapon_Shotgun::ShootBullet()
 	FVector SpawnLocation = GetActorLocation();	
 	FRotator SpawnRotation = GetActorRotation();
 
-	float HalfSpread = ShotgunSpreadAngle * 0.5f;
+	float HalfSpread = ShotgunSpreadAngle * 0.5f; //30 -> 15
 	
 	for (int32 i = 0 ; i < PelletCount ; ++i)
 	{
