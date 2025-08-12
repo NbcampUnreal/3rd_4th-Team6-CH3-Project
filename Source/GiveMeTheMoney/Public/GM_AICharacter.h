@@ -6,7 +6,7 @@
 #include "Animation/AnimMontage.h"
 #include "GM_AICharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEndDelegate);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEndDelegate);
 
 UCLASS()
 class GIVEMETHEMONEY_API AGM_AICharacter : public ACharacter
@@ -16,9 +16,9 @@ class GIVEMETHEMONEY_API AGM_AICharacter : public ACharacter
 public:
 	AGM_AICharacter();
 
-	UPROPERTY(BlueprintAssignable, Category = "AI|Event")
-	FOnAttackEndDelegate OnAttackEnd;
-	UPROPERTY(EditAnywhere, Category="AI|Attack")
+	//UPROPERTY(BlueprintAssignable, Category = "AI|Event")
+	//FOnAttackEndDelegate OnAttackEnd;
+	UPROPERTY(EditAnywhere, Category = "AI|Attack")
 	UAnimMontage* AttackMontage;
 
 	void Attack();
@@ -29,8 +29,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 
 public:
-	
+
 };

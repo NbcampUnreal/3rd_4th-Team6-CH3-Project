@@ -1,11 +1,11 @@
 #include "GM_AICharacter.h"
-#include "GM_AIController.h"
+//#include "GM_AIController.h"
 //#include "GM_AnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AGM_AICharacter::AGM_AICharacter()
 {
-	AIControllerClass = AGM_AIController::StaticClass();
+	//AIControllerClass = AGM_AIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	UCharacterMovementComponent* Movement = GetCharacterMovement();
@@ -19,7 +19,7 @@ AGM_AICharacter::AGM_AICharacter()
 void AGM_AICharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	UE_LOG(LogTemp, Warning, TEXT("AI character has been spawned."));
 }
 
@@ -30,7 +30,7 @@ void AGM_AICharacter::Attack()
 
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (!AnimInst) return;
-	
+
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &AGM_AICharacter::OnAttackMontageEnded);
 
@@ -56,5 +56,5 @@ void AGM_AICharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrup
 void AGM_AICharacter::AttackEnd()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[%s] Attack End"), *GetName());
-	OnAttackEnd.Broadcast();
+	//OnAttackEnd.Broadcast();
 }

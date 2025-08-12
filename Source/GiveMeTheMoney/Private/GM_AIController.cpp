@@ -1,5 +1,4 @@
 #include "GM_AIController.h"
-
 #include "GM_AICharacter.h"
 #include "NavigationSystem.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
@@ -11,21 +10,21 @@ const FName AGM_AIController::HomePosKey(TEXT("HomePos"));
 const FName AGM_AIController::PatrolPosKey(TEXT("PatrolPos"));
 const FName AGM_AIController::TargetKey(TEXT("Target"));
 
-AGM_AIController::AGM_AIController(): RepeatInterval(0)
+AGM_AIController::AGM_AIController() : RepeatInterval(0)
 {
-	//static ConstructorHelpers::FObjectFinder<UBlackboardData> BD(
-	//	TEXT("/Script/AIModule.BlackboardData'/Game/AI/BB_Mainboard.BB_Mainboard'"));
-	//if (BD.Succeeded())
-	//{
-	//	BBAsset = BD.Object;
-	//}
-//
-	//static ConstructorHelpers::FObjectFinder<UBehaviorTree> BT(
-	//	TEXT("/Script/AIModule.BehaviorTree'/Game/AI/BT_MainTree.BT_MainTree'"));
-	//if (BT.Succeeded())
-	//{
-	//	BTAsset = BT.Object;
-	//}
+	static ConstructorHelpers::FObjectFinder<UBlackboardData> BD(
+		TEXT(""));
+	if (BD.Succeeded())
+	{
+		BBAsset = BD.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BT(
+		TEXT(""));
+	if (BT.Succeeded())
+	{
+		BTAsset = BT.Object;
+	}
 }
 
 void AGM_AIController::BeginPlay()
@@ -77,7 +76,7 @@ void AGM_AIController::OnRepeatTimer()
 	if (NavSystem->GetRandomPointInNavigableRadius(FVector::ZeroVector, 600.0f, NextLocation))
 	{
 		UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, NextLocation.Location);
-		UE_LOG (LogTemp, Warning, TEXT("Next Location: %s"), *NextLocation.Location.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Next Location: %s"), *NextLocation.Location.ToString());
 	}
 }
 

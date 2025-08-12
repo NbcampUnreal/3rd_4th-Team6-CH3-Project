@@ -12,7 +12,7 @@ class GIVEMETHEMONEY_API AGM_AIController : public AAIController
 
 public:
 	AGM_AIController();
-	
+
 	static const FName PatrolPosKey;
 	static const FName HomePosKey;
 	static const FName TargetKey;
@@ -22,7 +22,7 @@ protected:
 	UBlackboardData* BBAsset;
 	UPROPERTY()
 	UBehaviorTree* BTAsset;
-	
+
 	virtual void BeginPlay() override;
 	void GMCHECK(bool bCondition);
 	void OnRepeatTimer();
@@ -32,3 +32,4 @@ protected:
 	FTimerHandle RepeatTimerHandle;
 	float RepeatInterval;
 };
+
