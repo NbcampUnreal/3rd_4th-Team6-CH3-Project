@@ -1,5 +1,33 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GM_AIAnimInstance.h"
+#include "GM_AICharacter.h"
+#include "Kismet/GameplayStatics.h"
 
+UGM_AIAnimInstance::UGM_AIAnimInstance()
+{
+	CurrentPawnSpeed = 0.0f;
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE(TEXT(""));
+	if (ATTACK_MONTAGE.Succeeded())
+	{
+		AttackMontage = ATTACK_MONTAGE.Object;
+
+		UE_LOG(LogTemp, Warning, TEXT("Montage Succeeded"));
+	}
+}
+
+void UGM_AIAnimInstance::PlayAttackMontage()
+{
+	if (!Montage_IsPlaying(AttackMontage))
+	{
+		Montage_Play(AttackMontage, 1.0f);
+	}
+}
+
+void UGM_AIAnimInstance::AnimNotify_OnAttackEnd()
+{
+	if (AGM_AICharacter* AICharacter = Cast<AGM_AICharacter>(TryGetPawnOwner()))
+	{
+		AICharacter->AttackEnd();
+	}
+
+}

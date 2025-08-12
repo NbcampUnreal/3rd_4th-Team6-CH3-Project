@@ -13,14 +13,14 @@ const FName AGM_AIController::TargetKey(TEXT("Target"));
 AGM_AIController::AGM_AIController() : RepeatInterval(0)
 {
 	static ConstructorHelpers::FObjectFinder<UBlackboardData> BD(
-		TEXT(""));
+		TEXT("/Script/AIModule.BlackboardData'/Game/AI/BB_Blackboard.BB_Blackboard'"));
 	if (BD.Succeeded())
 	{
 		BBAsset = BD.Object;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BT(
-		TEXT(""));
+		TEXT("/Script/AIModule.BehaviorTree'/Game/AI/BT_Main.BT_Main'"));
 	if (BT.Succeeded())
 	{
 		BTAsset = BT.Object;
@@ -45,7 +45,6 @@ void AGM_AIController::GMCHECK(bool bCondition)
 void AGM_AIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	//GetWorld()->GetTimerManager().SetTimer(RepeatTimerHandle, this, &AGM_AIController::OnRepeatTimer, RepeatInterval, true);
 
 	UBlackboardComponent* BlackboardComp = Blackboard.Get();
 	if (UseBlackboard(BBAsset, BlackboardComp))
@@ -61,7 +60,7 @@ void AGM_AIController::OnPossess(APawn* InPawn)
 void AGM_AIController::OnUnPossess()
 {
 	Super::OnUnPossess();
-	//GetWorld()->GetTimerManager().ClearTimer(RepeatTimerHandle);
+
 }
 
 void AGM_AIController::OnRepeatTimer()

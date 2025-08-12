@@ -1,17 +1,17 @@
 #include "GM_AICharacter.h"
-//#include "GM_AIController.h"
-//#include "GM_AnimInstance.h"
+#include "GM_AIController.h"
+#include "GM_AIAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AGM_AICharacter::AGM_AICharacter()
 {
-	//AIControllerClass = AGM_AIController::StaticClass();
+	AIControllerClass = AGM_AIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	UCharacterMovementComponent* Movement = GetCharacterMovement();
 	bUseControllerRotationYaw = false;
 	Movement->bUseControllerDesiredRotation = false;
-	Movement->MaxWalkSpeed = 400.0f;
+	Movement->MaxWalkSpeed = 300.0f;
 	Movement->bOrientRotationToMovement = true;
 	Movement->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 }
@@ -37,13 +37,13 @@ void AGM_AICharacter::Attack()
 	AnimInst->Montage_Play(AttackMontage);
 	AnimInst->Montage_SetEndDelegate(EndDelegate, AttackMontage);
 
-	//UE_LOG(LogTemp, Log, TEXT("[%s] Attack Montage Played"), *GetName());
+	UE_LOG(LogTemp, Log, TEXT("[%s] Attack Montage Played"), *GetName());
 
 
-	//auto AnimInstance = Cast<UGM_AnimInstance>(GetMesh()->GetAnimInstance());
-	//if (nullptr == AnimInstance) return;
+	auto AnimInstance = Cast<UGM_AIAnimInstance>(GetMesh()->GetAnimInstance());
+	if (nullptr == AnimInstance) return;
 
-	//AnimInstance->PlayAttackMontage();
+	AnimInstance->PlayAttackMontage();
 }
 
 void AGM_AICharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -56,5 +56,5 @@ void AGM_AICharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrup
 void AGM_AICharacter::AttackEnd()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[%s] Attack End"), *GetName());
-	//OnAttackEnd.Broadcast();
+	OnAttackEnd.Broadcast();
 }
