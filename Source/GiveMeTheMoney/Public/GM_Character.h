@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Weapon/GM_BaseWeapon.h"
 #include "GM_Character.generated.h"
 
 class USpringArmComponent;// 미리 선언
@@ -28,6 +29,19 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")// 내부 속성은 조정 가능함
 		UCameraComponent* CameraComp;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TArray<AGM_BaseWeapon*> WeaponInventory;	// 무기 배열
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	AGM_BaseWeapon* CurrentWeapon;	// 무기
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<class AGM_Weapon_Rifle> Rifle;	//WeaponRifle 클래스만 할당
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<class AGM_Weapon_Shotgun> Shotgun;	//WeaponShotgun 클래스만 할당
+
+	// 총구 위치 ,회전값
+	FVector MuzzleSocketLocation;
+	FRotator MuzzleSocketRotation;
+
 	UFUNCTION(BlueprintPure, Category = "Health")// 블루프린트에서 읽기 전용으로 사용 가능
 		float GetHealth() const;// 현재 체력을 반환하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Health")// 블루프린트에서 읽기 전용으로 사용 가능
@@ -39,6 +53,8 @@ public:
 	void StopCrouch();  // 웅크리기 멈춤
 
 protected:
+	virtual void BeginPlay() override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")// 에디터에서 조정 가능
 		float MaxHealth;// 최대 체력
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")// 에디터에서 조정 가능
@@ -69,10 +85,9 @@ protected:
 	UFUNCTION()
 	void Look(const FInputActionValue& value);// 마우스 입력(시선 처리)
 
-	void Fire(const FInputActionValue& value);// 총기 발사 로그
-	void FireComplete(const FInputActionValue& value);
+	void Fire(const FInputActionValue& value);// 총알 발사
 	void Crouch(const FInputActionValue& value);
-
+	
 	// 웅크리기 상태를 추적할 변수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
 	bool bIsCrouching = false; // 현재 웅크린 상태인지
@@ -90,6 +105,7 @@ protected:
 	void EquipWeapon1(const FInputActionValue& value); // 1번 무기 장착
 	UFUNCTION()
 	void EquipWeapon2(const FInputActionValue& value); // 2번 무기 장착
+	void UpdateMuzzleTransform();	// 총구 위치 업데이트
 
 private:
 	//float NormalSpeed;// 현재의 일반 속도

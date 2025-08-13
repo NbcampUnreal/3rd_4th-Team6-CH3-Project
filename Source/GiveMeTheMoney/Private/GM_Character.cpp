@@ -5,6 +5,8 @@
 #include "GM_Controller_Character.h"
 #include "EnhancedInputComponent.h"		// EnhancedInput 바인딩을 사용하기 위한 헤더파일
 #include "Camera/CameraComponent.h"
+#include "Weapon/GM_Weapon_Rifle.h"
+#include "Weapon/GM_Weapon_Shotgun.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"	// 캐릭터 무브먼트 컴포넌트 헤더파일
 
@@ -31,129 +33,6 @@ AGM_Character::AGM_Character()
 	Health = MaxHealth;	// 현재 체력 설정
 
 }
-
-
-void AGM_Character::Move(const FInputActionValue& value)	// value : 2D vector 값으로 들어옴
-{
-	if (!Controller)	return;	//캐릭터가 유효한지 확인 (존재하지 않다면 return)
-
-	const FVector2D MoveInput = value.Get<FVector2D>();		//value 값을 2DVector로 입력 받아 MoveInput에 저장
-
-	if (!FMath::IsNearlyZero(MoveInput.X))	// 입력 값이 0이 아니라면
-	{
-		AddMovementInput(GetActorForwardVector(), MoveInput.X);	//해당 액터의 정면으로 X만큼 이동
-	}
-
-	if (!FMath::IsNearlyZero(MoveInput.Y))
-	{
-		AddMovementInput(GetActorRightVector(), MoveInput.Y);	// 해당 액터의 오른쪽으로 Y만큼 이동
-	}
-}
-
-void AGM_Character::Look(const FInputActionValue& value)	// 시선 처리를 위한 마우스 좌표 값으로 2D Vector로 값을 받아옴
-{
-	FVector2D LookInput = value.Get<FVector2D>();	// 2D Vecotr 값을 저장
-
-	AddControllerYawInput(LookInput.X);		// 좌, 우 입력
-	AddControllerPitchInput(-LookInput.Y);	// 상, 하 입력
-}
-
-void AGM_Character::StartJump(const FInputActionValue& value) // value : Digit 값으로 true/false 값을 가지고 있음
-{
-	if (value.Get<bool>())	//Jump입력이 True일 때 StartJump 함수 실행
-	{
-		Jump();		// 언리얼 기본 제공 캐릭터 점프 기능
-	}
-}
-
-void AGM_Character::StopJump(const FInputActionValue& value)
-{
-	if (!value.Get<bool>())	//Jump입력이 False일 때 StopJump 함수 실행
-	{
-		StopJumping();		// 언리얼 기본 제공 캐릭터 점프 멈추는 기능
-	}
-}
-
-void AGM_Character::StartSprint(const FInputActionValue& value)
-{
-	if (GetCharacterMovement())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;		// 가속 키 입력시 즉시 Sprint속도로 변환
-	}
-}
-
-void AGM_Character::StopSprint(const FInputActionValue& value)
-{
-	if (GetCharacterMovement())
-	{
-
-		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;		// 가속 키 떼었을 때 즉시 Normal속도로 변환
-	}
-}
-
-void AGM_Character::Crouch(const FInputActionValue& value)
-{
-	// 입력 값과 관계없이, 함수가 호출되면 바로 토글 로직 실행
-	if (bIsCrouching)
-	{
-		StopCrouch();
-	}
-	else
-	{
-		StartCrouch();
-	}
-}
-
-void AGM_Character::StartCrouch()
-{
-	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
-	{
-		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
-		bIsCrouching = true;  // 직접 정의한 변수도 true로 변경
-		/*UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));*/
-	}
-}
-
-void AGM_Character::StopCrouch()
-{
-	ACharacter::UnCrouch(); // 웅크리기 해제
-	bIsCrouching = false;   // 직접 정의한 변수도 false로 변경
-	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
-}
-
-//void AGM_Character::Crouch(const FInputActionValue& value)
-//{
-//	if (value.Get<bool>()) // 웅크리기 키가 눌렸을 때
-//	{
-//		if (bIsCrouching)
-//		{
-//			StopCrouch();
-//		}
-//		else
-//		{
-//			StartCrouch();
-//		}
-//	}
-//}
-//
-//void AGM_Character::StartCrouch()
-//{
-//	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
-//	{
-//		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
-//		bIsCrouching = true;
-//		// 필요하다면, 여기에 웅크리기 애니메이션 재생 로직을 추가
-//		/*UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));*/
-//	}
-//}
-//
-//void AGM_Character::StopCrouch()
-//{
-//	ACharacter::UnCrouch(); // 웅크리기 해제
-//	bIsCrouching = false;
-//	// 필요하다면, 여기에 웅크리기 해제 애니메이션 재생 로직을 추가
-//	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
-//}
 
 // 입력 받은 값을 어떻게 처리 할 지 구현하는 곳
 void AGM_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -235,12 +114,6 @@ void AGM_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 					this,
 					&AGM_Character::Fire
 				);
-				EnhancedInput->BindAction(
-					PlayerController->FireAction,
-					ETriggerEvent::Completed, // 키를 떼는 순간
-					this,
-					&AGM_Character::FireComplete
-				);
 			}
 			if (PlayerController->EquipWeapon1Action)
 			{
@@ -264,6 +137,144 @@ void AGM_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		}
 	}
 }
+
+void AGM_Character::Move(const FInputActionValue& value)	// value : 2D vector 값으로 들어옴
+{
+	if (!Controller)	return;	//캐릭터가 유효한지 확인 (존재하지 않다면 return)
+
+	const FVector2D MoveInput = value.Get<FVector2D>();		//value 값을 2DVector로 입력 받아 MoveInput에 저장
+
+	if (!FMath::IsNearlyZero(MoveInput.X))	// 입력 값이 0이 아니라면
+	{
+		AddMovementInput(GetActorForwardVector(), MoveInput.X);	//해당 액터의 정면으로 X만큼 이동
+	}
+
+	if (!FMath::IsNearlyZero(MoveInput.Y))
+	{
+		AddMovementInput(GetActorRightVector(), MoveInput.Y);	// 해당 액터의 오른쪽으로 Y만큼 이동
+	}
+}
+
+void AGM_Character::Look(const FInputActionValue& value)	// 시선 처리를 위한 마우스 좌표 값으로 2D Vector로 값을 받아옴
+{
+	FVector2D LookInput = value.Get<FVector2D>();	// 2D Vecotr 값을 저장
+
+	AddControllerYawInput(LookInput.X);		// 좌, 우 입력
+	AddControllerPitchInput(-LookInput.Y);	// 상, 하 입력
+}
+
+void AGM_Character::StartJump(const FInputActionValue& value) // value : Digit 값으로 true/false 값을 가지고 있음
+{
+	if (value.Get<bool>())	//Jump입력이 True일 때 StartJump 함수 실행
+	{
+		Jump();		// 언리얼 기본 제공 캐릭터 점프 기능
+	}
+}
+
+void AGM_Character::StopJump(const FInputActionValue& value)
+{
+	if (!value.Get<bool>())	//Jump입력이 False일 때 StopJump 함수 실행
+	{
+		StopJumping();		// 언리얼 기본 제공 캐릭터 점프 멈추는 기능
+	}
+}
+
+void AGM_Character::StartSprint(const FInputActionValue& value)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;		// 가속 키 입력시 즉시 Sprint속도로 변환
+	}
+}
+
+void AGM_Character::StopSprint(const FInputActionValue& value)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;		// 가속 키 떼었을 때 즉시 Normal속도로 변환
+	}
+}
+
+void AGM_Character::Crouch(const FInputActionValue& value)
+{
+	// 입력 값과 관계없이, 함수가 호출되면 바로 토글 로직 실행
+	if (bIsCrouching)
+	{
+		StopCrouch();
+	}
+	else
+	{
+		StartCrouch();
+	}
+}
+
+void AGM_Character::StartCrouch()
+{
+	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
+	{
+		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
+		bIsCrouching = true;  // 직접 정의한 변수도 true로 변경
+		/*UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));*/
+	}
+}
+
+void AGM_Character::StopCrouch()
+{
+	ACharacter::UnCrouch(); // 웅크리기 해제
+	bIsCrouching = false;   // 직접 정의한 변수도 false로 변경
+	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
+}
+
+void AGM_Character::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UpdateMuzzleTransform();	// 총구 위치 업데이트
+	// Rife, Shotgun 무기 스폰
+	if (Rifle && Shotgun)
+	{
+		WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Rifle>(Rifle, MuzzleSocketLocation, MuzzleSocketRotation));
+		WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(Shotgun, MuzzleSocketLocation, MuzzleSocketRotation));
+
+		CurrentWeapon = WeaponInventory[0];	// 시작무기는 Rifle
+	}
+}
+
+//void AGM_Character::Crouch(const FInputActionValue& value)
+//{
+//	if (value.Get<bool>()) // 웅크리기 키가 눌렸을 때
+//	{
+//		if (bIsCrouching)
+//		{
+//			StopCrouch();
+//		}
+//		else
+//		{
+//			StartCrouch();
+//		}
+//	}
+//}
+//
+//void AGM_Character::StartCrouch()
+//{
+//	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
+//	{
+//		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
+//		bIsCrouching = true;
+//		// 필요하다면, 여기에 웅크리기 애니메이션 재생 로직을 추가
+//		/*UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));*/
+//	}
+//}
+//
+//void AGM_Character::StopCrouch()
+//{
+//	ACharacter::UnCrouch(); // 웅크리기 해제
+//	bIsCrouching = false;
+//	// 필요하다면, 여기에 웅크리기 해제 애니메이션 재생 로직을 추가
+//	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
+//}
+
+
 
 float AGM_Character::GetHealth() const	// 현재 체력을 반환하는 함수
 {
@@ -296,31 +307,39 @@ float AGM_Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 
 void AGM_Character::Fire(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "Fire");
-}
-
-void AGM_Character::FireComplete(const FInputActionValue& Value)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, "Fire Compelete");
+	if (CurrentWeapon)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Fire!!!")));
+		// 총알 스폰 위치 업데이트 및 발사
+		UpdateMuzzleTransform();
+		CurrentWeapon->SetActorLocation(MuzzleSocketLocation);
+		CurrentWeapon->SetActorRotation(MuzzleSocketRotation);
+		CurrentWeapon->ShootBullet();	// 클릭시 선택한 무기 (현재는 Shotgun) 발사
+	}
 }
 
 void AGM_Character::EquipWeapon1(const FInputActionValue& value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Equip 1st Weatpon");
-	//if (value.Get<bool>())
-	//{
-	//	// 여기에 실제 무기 교체 로직을 구현합니다.
-	//}
+	if (WeaponInventory.IsValidIndex(0))
+	{
+		CurrentWeapon = WeaponInventory[0];	// 1번 Rifle 장착
+	}
 }
 
 void AGM_Character::EquipWeapon2(const FInputActionValue& value)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Equip 2th Weapon");
-	//if (value.Get<bool>())
-	//{
-	//	
-	//	// 여기에 실제 무기 교체 로직을 구현합니다.
-	//}
+	if (WeaponInventory.IsValidIndex(1))
+	{
+		CurrentWeapon = WeaponInventory[1];	// 2번 Shotgun 장착
+	}
+}
+
+void AGM_Character::UpdateMuzzleTransform()
+{
+	MuzzleSocketLocation = GetMesh()->GetSocketLocation("Muzzle");
+	MuzzleSocketRotation = GetMesh()->GetSocketRotation("Muzzle");
 }
 
 void AGM_Character::OnDeath()
