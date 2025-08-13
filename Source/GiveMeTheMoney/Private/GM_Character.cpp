@@ -93,16 +93,14 @@ void AGM_Character::StopSprint(const FInputActionValue& value)
 
 void AGM_Character::Crouch(const FInputActionValue& value)
 {
-	if (value.Get<bool>()) // 웅크리기 키가 눌렸을 때
+	// 입력 값과 관계없이, 함수가 호출되면 바로 토글 로직 실행
+	if (bIsCrouching)
 	{
-		if (bIsCrouching)
-		{
-			StopCrouch();
-		}
-		else
-		{
-			StartCrouch();
-		}
+		StopCrouch();
+	}
+	else
+	{
+		StartCrouch();
 	}
 }
 
@@ -111,19 +109,51 @@ void AGM_Character::StartCrouch()
 	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
 	{
 		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
-		bIsCrouching = true;
-		// 필요하다면, 여기에 웅크리기 애니메이션 재생 로직을 추가
-		UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));
+		bIsCrouching = true;  // 직접 정의한 변수도 true로 변경
+		/*UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));*/
 	}
 }
 
 void AGM_Character::StopCrouch()
 {
 	ACharacter::UnCrouch(); // 웅크리기 해제
-	bIsCrouching = false;
-	// 필요하다면, 여기에 웅크리기 해제 애니메이션 재생 로직을 추가
-	UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));
+	bIsCrouching = false;   // 직접 정의한 변수도 false로 변경
+	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
 }
+
+//void AGM_Character::Crouch(const FInputActionValue& value)
+//{
+//	if (value.Get<bool>()) // 웅크리기 키가 눌렸을 때
+//	{
+//		if (bIsCrouching)
+//		{
+//			StopCrouch();
+//		}
+//		else
+//		{
+//			StartCrouch();
+//		}
+//	}
+//}
+//
+//void AGM_Character::StartCrouch()
+//{
+//	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
+//	{
+//		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
+//		bIsCrouching = true;
+//		// 필요하다면, 여기에 웅크리기 애니메이션 재생 로직을 추가
+//		/*UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));*/
+//	}
+//}
+//
+//void AGM_Character::StopCrouch()
+//{
+//	ACharacter::UnCrouch(); // 웅크리기 해제
+//	bIsCrouching = false;
+//	// 필요하다면, 여기에 웅크리기 해제 애니메이션 재생 로직을 추가
+//	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
+//}
 
 // 입력 받은 값을 어떻게 처리 할 지 구현하는 곳
 void AGM_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -192,7 +222,7 @@ void AGM_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 			{
 				EnhancedInput->BindAction(
 					PlayerController->CrouchAction,
-					ETriggerEvent::Triggered, // Triggered 이벤트를 사용
+					ETriggerEvent::Started, // Triggered 이벤트를 사용
 					this,
 					&AGM_Character::Crouch
 				);
@@ -276,20 +306,21 @@ void AGM_Character::FireComplete(const FInputActionValue& Value)
 
 void AGM_Character::EquipWeapon1(const FInputActionValue& value)
 {
-	if (value.Get<bool>())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "1번 무기 장착");
-		// 여기에 실제 무기 교체 로직을 구현합니다.
-	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Equip 1st Weatpon");
+	//if (value.Get<bool>())
+	//{
+	//	// 여기에 실제 무기 교체 로직을 구현합니다.
+	//}
 }
 
 void AGM_Character::EquipWeapon2(const FInputActionValue& value)
 {
-	if (value.Get<bool>())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "2번 무기 장착");
-		// 여기에 실제 무기 교체 로직을 구현합니다.
-	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Equip 2th Weapon");
+	//if (value.Get<bool>())
+	//{
+	//	
+	//	// 여기에 실제 무기 교체 로직을 구현합니다.
+	//}
 }
 
 void AGM_Character::OnDeath()
