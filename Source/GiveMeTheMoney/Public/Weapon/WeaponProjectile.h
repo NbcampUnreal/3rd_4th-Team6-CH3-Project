@@ -19,7 +19,7 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
-	float DamageAmount = 10.0f;
+	float DamageAmount = 10.0f;	//데미지 
 
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MeshComponent")
@@ -38,6 +38,8 @@ public:
 		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult);
+
+	void OnHitDamage(AActor* DamagedActor, float BaseDamage, AActor* DamageCauser, TSubclassOf<UDamageType> DamageTypeClass );
 
 	void FireIndirection(const FVector& ShootDirection);	// 나아갈 방향조절
 };
