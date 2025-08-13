@@ -27,6 +27,15 @@ public:
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	int CurrentHP;  // 현재 체력
+	float Speed;   // 이동 속도
+	int MaxHP; // 최대체력
+
+
+	void TakeDamage(); // 데미지 처리
+	void Death(); // 죽음
+	void DropCoin(); // 죽은 후 코인 떨어뜨림
+
 protected:
 	virtual void BeginPlay() override;
 

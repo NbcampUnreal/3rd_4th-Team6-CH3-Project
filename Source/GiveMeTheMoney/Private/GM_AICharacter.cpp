@@ -58,3 +58,24 @@ void AGM_AICharacter::AttackEnd()
 	UE_LOG(LogTemp, Warning, TEXT("[%s] Attack End"), *GetName());
 	OnAttackEnd.Broadcast();
 }
+
+void AGM_AICharacter::TakeDamage()
+{
+	CurrentHP -= 10; // Example damage value
+	if (CurrentHP <= 0)
+	{
+		Death();
+	}
+}
+
+void AGM_AICharacter::Death()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[%s] Death"), *GetName());
+	DropCoin();
+	Destroy();
+}
+
+void AGM_AICharacter::DropCoin()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[%s] Dropped coins"), *GetName());
+}
