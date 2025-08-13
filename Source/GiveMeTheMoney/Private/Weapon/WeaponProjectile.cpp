@@ -1,6 +1,8 @@
 #include "Weapon/WeaponProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "Weapon/Dummy_WeaponCharacter.h"
+#include "Kismet/GameplayStatics.h"
 /*
 	총알 발사 클래스 
 	해당 클래스는 GM_Weapon_ShotGun 클래스와 GM_Weapon_Rifle 클래스에서 스폰될 예정
@@ -10,7 +12,7 @@ AWeaponProjectile::AWeaponProjectile()
 {
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComp"));
 	CollisionComp->InitSphereRadius(15.0f);	// 콜리전 스피어 반지름
-	CollisionComp->SetCollisionProfileName("Projectile");	//콜리전 프로파일 설정	에디터에서 Projectile 생성해야함
+	CollisionComp->SetCollisionProfileName("ProjectileProfile");	//콜리전 프로파일 설정	에디터에서 Projectile 생성해야함
 	SetRootComponent(CollisionComp);	//RootComponent로 설정
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AWeaponProjectile::OnHitBullet);	// Overlap이벤트 HitBullet으로 바인딩
 	
@@ -31,21 +33,39 @@ AWeaponProjectile::AWeaponProjectile()
 void AWeaponProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, FString::Printf(TEXT("SpawnProjectile!!!")));
 }
 
 void AWeaponProjectile::OnHitBullet(UPrimitiveComponent* OverlappedComp, 
 	AActor* OtherActor, UPrimitiveComponent* OtherComp, 
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor == GetOwner()) return;	// 자기를 호출한 부모 액터와 오버랩시 return
+	if (OtherActor == GetOwner()) return;	// 자기를 호출한 부모 액터(WeaponClass)와 오버랩시 return
 
 	if (OtherActor != this && OtherComp && OtherActor)	// 자기 자신이 아니고 OtherComp 및 OtherActor가 존재할때 
 	{
-		// Hit된 액터 로그 출력
-		UE_LOG(LogTemp, Warning, TEXT("BulletHit! OtherActor : %s"), *OtherActor->GetName());	
+		if (!OtherActor->ActorHasTag("Player"))	// 플레이어 캐릭터가 아닐때 검출
+		{
+			// Hit된 액터 로그 출력
+			UE_LOG(LogTemp, Warning, TEXT("BulletHit! OtherActor : %s"), *OtherActor->GetName());
+			OnHitDamage(OtherActor, DamageAmount, this, UDamageType::StaticClass());	// 데미지 함수 호출
+		}
 	}
 }
+
+void AWeaponProjectile::OnHitDamage(AActor* DamagedActor, float BaseDamage, 
+	AActor* DamageCauser, TSubclassOf<UDamageType> DamageTypeClass)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Called OnHitDamage"))
+	UGameplayStatics::ApplyDamage(
+		DamagedActor,
+		BaseDamage,
+		nullptr,
+		DamageCauser,
+		DamageTypeClass
+	);
+}
+
+
 
 void AWeaponProjectile::FireIndirection(const FVector& ShootDirection)
 {

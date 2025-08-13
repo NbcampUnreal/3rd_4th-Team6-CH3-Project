@@ -19,5 +19,6 @@ public:
 		 virtual void ShootBullet();	// 무기에 맞는 탄환 발사
 	
  protected:
+		FActorSpawnParameters SpawnParams;
 	    virtual void BeginPlay() override;
 };
