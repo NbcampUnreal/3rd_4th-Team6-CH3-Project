@@ -130,8 +130,8 @@ void ADummy_WeaponCharacter::BeginPlay()
 	{
 		WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Rifle>(Rifle, MuzzleSocketLocation, MuzzleSocketRotation));
 		WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(Shotgun, MuzzleSocketLocation, MuzzleSocketRotation));
-	
-		CurrentWeapon = WeaponInventory[1];	// 시작무기는 샷건
+		
+		CurrentWeapon = WeaponInventory[0];	// 시작무기는 Rifle
 	}
 }
 

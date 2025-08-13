@@ -46,7 +46,7 @@ void AGM_Weapon_Rifle::ShootBullet()
 
     // 총알 스폰
     AWeaponProjectile* Projectile =
-        GetWorld()->SpawnActor<AWeaponProjectile>(RifleProjectileClass, SpawnLocation, SpawnRotation);
+        GetWorld()->SpawnActor<AWeaponProjectile>(RifleProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
     if (Projectile)
     {
         Projectile->FireIndirection(GetActorForwardVector());   //현재 액터의 전방으로 총알 발사
