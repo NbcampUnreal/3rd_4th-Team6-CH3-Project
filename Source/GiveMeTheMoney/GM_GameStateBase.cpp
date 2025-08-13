@@ -2,6 +2,9 @@
 #include "GM_GameStateBase.h"
 #include "Net/UnrealNetwork.h"
 
+#include "GM_GameStateBase.h"
+#include "Net/UnrealNetwork.h"
+
 AGM_GameStateBase::AGM_GameStateBase()
 {
 	TotalCoin = 0;

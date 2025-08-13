@@ -139,7 +139,23 @@ void AGM_GameModeBase::AddCoin(int32 Amount)
 
 void AGM_GameModeBase::OnCoinCollected()
 {
-	// 코인 수집 로직 (현재는 비어있음)
+	AddCoin(1);
+
+	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
+	if (MyGS)
+	{
+		// 5 코인마다 버프 적용
+		if (MyGS->TotalCoin > 0 && MyGS->TotalCoin % 5 == 0)
+		{
+			ACharacter* MyCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+			if (MyCharacter && MyCharacter->GetClass()->ImplementsInterface(UGM_Interface::StaticClass()))
+			{
+				// 인터페이스를 통해 캐릭터에 버프 적용
+				// IGM_Interface::Execute_ApplyBuff(MyCharacter, 1.5f);
+				UE_LOG(LogTemp, Warning, TEXT("Player buff applied! (Speed and Attack * 1.5f)"));
+			}
+		}
+	}
 }
 
 void AGM_GameModeBase::OnGameOver(bool bIsVictory)
