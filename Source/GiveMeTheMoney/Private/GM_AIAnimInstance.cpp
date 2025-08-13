@@ -6,7 +6,7 @@ UGM_AIAnimInstance::UGM_AIAnimInstance()
 {
 	CurrentPawnSpeed = 0.0f;
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE(TEXT(""));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE(TEXT("/Script/Engine.AnimMontage'/Game/AI/Attack1.Attack1'"));
 	if (ATTACK_MONTAGE.Succeeded())
 	{
 		AttackMontage = ATTACK_MONTAGE.Object;

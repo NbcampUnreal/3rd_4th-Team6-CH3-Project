@@ -31,7 +31,6 @@ void AGM_AIController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//APawn* MyPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 }
 
 void AGM_AIController::GMCHECK(bool bCondition)
