@@ -27,12 +27,12 @@ AWeaponProjectile::AWeaponProjectile()
 	BulletProjectileMovement->bRotationFollowsVelocity = true;	// 속도에 따른 회전값 변화 적용
 	BulletProjectileMovement->bShouldBounce = false;	// 바운스 미적용
 
-	InitialLifeSpan = 10.0f;	// 해당 클래스 생존 시간
 }
 
 void AWeaponProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	SetLifeSpan(ProjectileLifeSpan);	// 탄환 생존 시간 설정
 }
 
 void AWeaponProjectile::OnHitBullet(UPrimitiveComponent* OverlappedComp, 
@@ -48,6 +48,21 @@ void AWeaponProjectile::OnHitBullet(UPrimitiveComponent* OverlappedComp,
 			// Hit된 액터 로그 출력
 			UE_LOG(LogTemp, Warning, TEXT("BulletHit! OtherActor : %s"), *OtherActor->GetName());
 			OnHitDamage(OtherActor, DamageAmount, this, UDamageType::StaticClass());	// 데미지 함수 호출
+			
+			//나이아가라 이펙트 설정되어있다면
+			if (OverlapHitEffect)
+			{
+				// NiagaraSystem 스폰
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+					GetWorld(),
+					OverlapHitEffect,
+					GetActorLocation(),
+					GetActorRotation()
+				);
+			}
+
+			// 탄환 소멸
+			Destroy();
 		}
 	}
 }
