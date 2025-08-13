@@ -25,7 +25,6 @@ void AGM_Weapon_Shotgun::Activate()
 // 총알 스폰 
 void AGM_Weapon_Shotgun::ShootBullet()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, FString::Printf(TEXT("ShootBullet!!!")));
 	if (ShotgunProjectileClass == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, FString::Printf(TEXT("Class Null !!!")));
@@ -54,7 +53,7 @@ void AGM_Weapon_Shotgun::ShootBullet()
 		
 		// Projectile 생성 위치 및 회전 지정
 		AWeaponProjectile* Projectile =
-			GetWorld()->SpawnActor<AWeaponProjectile>(ShotgunProjectileClass, SpawnLocation, SpawnRotation);
+			GetWorld()->SpawnActor<AWeaponProjectile>(ShotgunProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
 
 		if (Projectile)	// Projectile 스폰시 
 		{
