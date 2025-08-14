@@ -134,6 +134,16 @@ void AGM_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 					&AGM_Character::EquipWeapon2
 				);
 			}
+
+			if (PlayerController->ReloadAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->ReloadAction,
+					ETriggerEvent::Started, // 키가 눌렸을 때
+					this,
+					&AGM_Character::Reload
+				);
+			}
 		}
 	}
 }
@@ -314,7 +324,14 @@ void AGM_Character::Fire(const FInputActionValue& Value)
 		UpdateMuzzleTransform();
 		CurrentWeapon->SetActorLocation(MuzzleSocketLocation);
 		CurrentWeapon->SetActorRotation(MuzzleSocketRotation);
+		if (int32 CurrentAmmo = CurrentWeapon->GetAmmo() <= 0) 
+		{
+			UE_LOG(LogTemp, Warning, TEXT("You Should Reload"));	//탄약 부족시 재장전 필요 출력
+			return;
+		}
 		CurrentWeapon->ShootBullet();	// 클릭시 선택한 무기 (현재는 Shotgun) 발사
+		UE_LOG(LogTemp, Warning, TEXT("%d/%d"), CurrentWeapon->GetAmmo(), CurrentWeapon->MaxAmmo);
+		CurrentWeapon->CurrentAmmo -= 1;	// 탄약 감소
 	}
 }
 
@@ -336,11 +353,20 @@ void AGM_Character::EquipWeapon2(const FInputActionValue& value)
 	}
 }
 
+void AGM_Character::Reload(const FInputActionValue& value)
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Reload();	// 현재 무기 재장전
+	}
+}
+
 void AGM_Character::UpdateMuzzleTransform()
 {
 	MuzzleSocketLocation = GetMesh()->GetSocketLocation("Muzzle");
 	MuzzleSocketRotation = GetMesh()->GetSocketRotation("Muzzle");
 }
+
 
 void AGM_Character::OnDeath()
 {

@@ -84,9 +84,12 @@ protected:
 	void StopSprint(const FInputActionValue& value);// 질주 멈춤
 	UFUNCTION()
 	void Look(const FInputActionValue& value);// 마우스 입력(시선 처리)
-
+	UFUNCTION()
 	void Fire(const FInputActionValue& value);// 총알 발사
-	void Crouch(const FInputActionValue& value);
+	UFUNCTION()
+	void Reload(const FInputActionValue& value);	// 재장전
+	
+	void Crouch(const FInputActionValue& value);	//앉기
 	
 	// 웅크리기 상태를 추적할 변수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
@@ -105,6 +108,7 @@ protected:
 	void EquipWeapon1(const FInputActionValue& value); // 1번 무기 장착
 	UFUNCTION()
 	void EquipWeapon2(const FInputActionValue& value); // 2번 무기 장착
+
 	void UpdateMuzzleTransform();	// 총구 위치 업데이트
 
 private:

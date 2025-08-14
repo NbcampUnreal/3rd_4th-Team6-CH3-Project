@@ -44,6 +44,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
     UInputAction* EquipWeapon2Action;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+    UInputAction* ReloadAction;
     //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
     //TSubclassOf<UUserWidget> HUDWidgetClass;    //UI Ç¥½Ã À§Á¬
     //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
