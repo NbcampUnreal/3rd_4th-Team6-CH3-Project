@@ -20,3 +20,18 @@ void AGM_BaseWeapon::ShootBullet()
 {
 
 }
+
+int AGM_BaseWeapon::GetAmmo() const	// ³²Àº Åº¾à ¹ÝÈ¯
+{
+	return CurrentAmmo;
+}
+
+int AGM_BaseWeapon::GetMaxAmmo() const	// ÃÑ Åº¾à ¹ÝÈ¯
+{
+	return MaxAmmo;
+}
+
+void AGM_BaseWeapon::Reload()
+{
+
+}

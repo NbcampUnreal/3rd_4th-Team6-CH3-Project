@@ -27,7 +27,7 @@ public:
 
 	virtual void Activate() override;
 	virtual void ShootBullet() override;	//총알 발사
-	
+	virtual void Reload() override;
 
 private:
 	float TimeBetweenShots;

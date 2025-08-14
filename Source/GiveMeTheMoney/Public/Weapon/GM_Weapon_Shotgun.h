@@ -28,6 +28,7 @@ protected:
 	int32 PelletCount = 8;	// 한번에 발사할 탄환갯수
 
 public:	
-	virtual void Activate() override;
-	virtual void ShootBullet() override;
+	virtual void Activate() override;	//무기 활성화
+	virtual void ShootBullet() override;	// 탄환 발사
+	virtual void Reload() override;	//재장전
 };
