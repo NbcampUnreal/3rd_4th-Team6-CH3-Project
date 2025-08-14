@@ -1,5 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-
+/*
 #pragma once
 
 #include "CoreMinimal.h"
@@ -29,7 +29,7 @@ struct FWaveConfig // 웨이브
 };
 
 UCLASS()
-class MONSTERSHOOTER2_API AWaveGameMode : public AGameModeBase
+class GIVEMETHEMONEY_API AWaveGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
@@ -114,3 +114,4 @@ public:
 	// int32 GetKillCount() const { return KillCount; }
 	// int32 GetScore() const { return Score; }
 };
+*/
