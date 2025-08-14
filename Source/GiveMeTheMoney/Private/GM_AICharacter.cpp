@@ -59,23 +59,42 @@ void AGM_AICharacter::AttackEnd()
 	OnAttackEnd.Broadcast();
 }
 
-void AGM_AICharacter::TakeDamage()
+float AGM_AICharacter::GetHealth() const	// 현재 체력을 반환하는 함수
 {
-	CurrentHP -= 10; // Example damage value
-	if (CurrentHP <= 0)
-	{
-		Death();
-	}
+	return Health;
 }
 
-void AGM_AICharacter::Death()
+void AGM_AICharacter::AddHealth(float Amount) {	// 체력을 증가시키는 함수
+	if (Amount <= 0.0f) return;	// 증가할 양이 0 이하라면 아무것도 하지 않음
+
+	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);	// 현재 체력을 증가시키고 0과 MaxHealth 사이로 제한
+	UE_LOG(LogTemp, Warning, TEXT("[AI] Health increased to: %f"), Health);	// 현재 체력 로그 출력
+}
+
+float AGM_AICharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("[%s] Death"), *GetName());
-	DropCoin();
-	Destroy();
+	// ActualDamage는 부모 클래스의 TakeDamage를 호출하여 기본 데미지 처리 로직을 가져온다.
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);	// 부모 클래스의 TakeDamage 호출
+
+	Health = FMath::Clamp(Health - DamageAmount, 0.0f, MaxHealth);	// 현재 체력을 감소시키고 0과 MaxHealth 사이로 제한
+	UE_LOG(LogTemp, Warning, TEXT("[AI] Health decreased to: %f"), Health);	// 현재 체력 로그 출력
+
+	if (Health <= 0.0f)
+	{
+		OnDeath();	// 체력이 0 이하가 되면 OnDeath 함수를 호출
+	}
+
+	return 0.0f;
 }
 
 void AGM_AICharacter::DropCoin()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[%s] Dropped coins"), *GetName());
+}
+
+void AGM_AICharacter::OnDeath()
+{
+	// 게임 종료 로직 구현 예정
+
 }

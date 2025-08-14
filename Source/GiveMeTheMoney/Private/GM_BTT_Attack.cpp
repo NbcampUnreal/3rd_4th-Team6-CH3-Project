@@ -23,7 +23,8 @@ EBTNodeResult::Type UGM_BTT_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	AICharacter->Attack();
 	IsAttacking = true;
 
-	AICharacter->OnAttackEnd.AddDynamic(this, &UGM_BTT_Attack::OnAttackEnded);
+	AICharacter->OnAttackEnd.RemoveDynamic(this, &UGM_BTT_Attack::OnAttackEnded);
+	AICharacter->OnAttackEnd.AddDynamic(this, &UGM_BTT_Attack::OnAttackEnded);;
 
 	return EBTNodeResult::InProgress;
 }
