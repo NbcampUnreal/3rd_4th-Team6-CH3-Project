@@ -14,7 +14,10 @@ AGM_Weapon_Shotgun::AGM_Weapon_Shotgun()
 {
 	RootSceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComp"));
 	SetRootComponent(RootSceneComp);
-	//ShotgunProjectileClass = AWeaponProjectile::StaticClass();	// Weapon 생성시 Projectile 클래스 할당 BP가 아니라서 아무것도 안보이는거..
+
+
+	MaxAmmo = 10;	// 최대 탄약 갯수
+	CurrentAmmo = MaxAmmo;	// 탄약 초기 설정
 }
 
 void AGM_Weapon_Shotgun::Activate()
@@ -53,11 +56,17 @@ void AGM_Weapon_Shotgun::ShootBullet()
 		
 		// Projectile 생성 위치 및 회전 지정
 		AWeaponProjectile* Projectile =
-			GetWorld()->SpawnActor<AWeaponProjectile>(ShotgunProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+			GetWorld()->SpawnActor<AWeaponProjectile>(ShotgunProjectileClass, SpawnLocation, SpawnRotation);
 
 		if (Projectile)	// Projectile 스폰시 
 		{
 			Projectile->FireIndirection(ShotDirection);	// 발사 방향에 맞게 발사
 		}
 	}
+}
+
+void AGM_Weapon_Shotgun::Reload()
+{
+	UE_LOG(LogTemp, Log, TEXT("Shotgun Reload!"));
+	CurrentAmmo = MaxAmmo;
 }

@@ -16,16 +16,9 @@ AGM_Weapon_Rifle::AGM_Weapon_Rifle()
     // SceneComponent 를 Root로 지정
     RootSceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComp"));
     SetRootComponent(RootSceneComp);
-   /* WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-    SetRootComponent(WeaponMesh);
 
-    MaxAmmo = 30;
-    CurrentAmmo = MaxAmmo;
-    FireRatePerSecond = 5.0f;
-    TimeBetweenShots = 1.0f / FireRatePerSecond;
-    LastFireTime = 0.f;
-    
-    DamageAmount = 8.0f;*/
+    MaxAmmo = 20;	// 최대 탄약 갯수
+    CurrentAmmo = MaxAmmo;	// 탄약 초기 설정
 }
 
 void AGM_Weapon_Rifle::Activate()
@@ -46,11 +39,17 @@ void AGM_Weapon_Rifle::ShootBullet()
 
     // 총알 스폰
     AWeaponProjectile* Projectile =
-        GetWorld()->SpawnActor<AWeaponProjectile>(RifleProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+        GetWorld()->SpawnActor<AWeaponProjectile>(RifleProjectileClass, SpawnLocation, SpawnRotation);
     if (Projectile)
     {
         Projectile->FireIndirection(GetActorForwardVector());   //현재 액터의 전방으로 총알 발사
     }
+}
+
+void AGM_Weapon_Rifle::Reload()
+{
+    UE_LOG(LogTemp, Log, TEXT("Rifle Reload!"));
+    CurrentAmmo = MaxAmmo;
 }
 
 

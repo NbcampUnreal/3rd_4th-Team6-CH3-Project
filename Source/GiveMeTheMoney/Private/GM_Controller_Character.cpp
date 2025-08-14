@@ -14,7 +14,8 @@ AGM_Controller_Character::AGM_Controller_Character() //»ý¼ºÀÚ
     FireAction(nullptr),
     CrouchAction(nullptr),
     EquipWeapon1Action(nullptr),
-    EquipWeapon2Action(nullptr)
+    EquipWeapon2Action(nullptr),
+    ReloadAction(nullptr)
     //HUDWidgetInstance(nullptr)
 {
 }
