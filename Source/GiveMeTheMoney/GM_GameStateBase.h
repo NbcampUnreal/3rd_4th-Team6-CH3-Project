@@ -3,7 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
-#include "Net/UnrealNetwork.h"
 #include "GM_GameStateBase.generated.h"
 
 /**
@@ -40,4 +39,6 @@ public:
 
 	UPROPERTY(Replicated)
 	int32 MinKillCount;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
