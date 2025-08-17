@@ -4,13 +4,13 @@
 #include "GameModes/WaveGameMode.h"
 
 #include "Blueprint/UserWidget.h"
-#include "Characters/ShooterPlayer.h"
+#include "GM_Characters/ShooterPlayer.h"
 #include "Kismet/GameplayStatics.h"
-#include "Monster/Monster.h"
+#include "GM_Monster/Monster.h"
 #include "Spawners/SpawnVolume.h"
 #include "UI/WaveHUDWidget.h"
 
-AWaveGameMode::AWaveGameMode()
+AGM_GameModeBase::AGM_GameModeBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	// 소환될 몬스터, 리스폰 간격(시간), 웨이브 타임
@@ -23,7 +23,7 @@ AWaveGameMode::AWaveGameMode()
 	// };
 }
 
-void AWaveGameMode::BeginPlay()
+void AGM_GameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -66,7 +66,7 @@ void AWaveGameMode::BeginPlay()
 	}
 }
 
-void AWaveGameMode::StartNextWave()
+void AGM_GameModeBase::StartNextWave()
 {
 	// 게임 level 안에
 	// waves = 3개라고 정의 -> bp -> 첫 번째 웨이브 시작.
@@ -97,14 +97,14 @@ void AWaveGameMode::StartNextWave()
 		GetWorldTimerManager().SetTimer(
 			WaveSpawnTimerHandle,
 			this,
-			&AWaveGameMode::SpawnOneEnemy,
+			&AGM_GameModeBase::SpawnOneEnemy,
 			Wave.SpawnInterval,
 			true
 		);
 	}
 }
 
-void AWaveGameMode::SpawnOneEnemy()
+void AGM_GameModeBase::SpawnOneEnemy()
 {
 	if (!bGameActive) return;
 
@@ -130,7 +130,7 @@ void AWaveGameMode::SpawnOneEnemy()
 	}
 }
 
-void AWaveGameMode::CheckWaveEnd()
+void AGM_GameModeBase::CheckWaveEnd()
 {
 	if (!bGameActive) return;
 
@@ -140,7 +140,7 @@ void AWaveGameMode::CheckWaveEnd()
 	}
 }
 
-void AWaveGameMode::TickGameTimer()
+void AGM_GameModeBase::TickGameTimer()
 {
 	if (!bGameActive) return;
 
@@ -162,7 +162,7 @@ void AWaveGameMode::TickGameTimer()
 	}
 }
 
-void AWaveGameMode::GameOver(bool bVictory)
+void AGM_GameModeBase::GameOver(bool bVictory)
 {
 	if (!bGameActive) return;
 	bGameActive = false;
@@ -206,7 +206,7 @@ void AWaveGameMode::GameOver(bool bVictory)
 	}
 }
 
-bool AWaveGameMode::GetRandomSpawnLocation(FVector& OutLocation) const
+bool AGM_GameModeBase::GetRandomSpawnLocation(FVector& OutLocation) const
 {
 	if (SpawnVolumes.Num() == 0)
 		return false;
@@ -220,7 +220,7 @@ bool AWaveGameMode::GetRandomSpawnLocation(FVector& OutLocation) const
 	return false;
 }
 
-void AWaveGameMode::StartGame()
+void AGM_GameModeBase::StartGame()
 {
 	if (bGameActive) return;
 	bGameActive = true;
@@ -258,7 +258,7 @@ void AWaveGameMode::StartGame()
 	StartNextWave();
 }
 
-void AWaveGameMode::ReportEnemyDeath()
+void AGM_GameModeBase::ReportEnemyDeath()
 {
 	if (!bGameActive) return;
 

@@ -29,12 +29,12 @@ struct FWaveConfig // 웨이브
 };
 
 UCLASS()
-class MONSTERSHOOTER2_API AWaveGameMode : public AGameModeBase
+class MONSTERSHOOTER2_API AGM_GameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
-	AWaveGameMode();
+	AGM_GameModeBase();
 
 protected:
 	virtual void BeginPlay() override;
