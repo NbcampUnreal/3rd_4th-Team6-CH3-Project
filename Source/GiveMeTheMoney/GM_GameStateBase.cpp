@@ -8,10 +8,10 @@
 AGM_GameStateBase::AGM_GameStateBase()
 {
 	TotalCoin = 0;
-	CurrentWaveIndex = 0;
+	CurrentWaveIndex = 1;
 	MaxWaveIndex = 5; // 예시 최대 웨이브
 	GameTime = 0.0f;
-	WaveDuration = 0.0f;
+	WaveDuration = 20.0f;	// 웨이브 시간
 	SpawnedMonster = 0;
 	CurrentKillCount = 0;
 	MinKillCount = 10; // 예시 최소 킬 수

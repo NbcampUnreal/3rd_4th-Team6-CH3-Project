@@ -1,7 +1,9 @@
 
 #include "GM_GameModeBase.h"
 #include "GM_GameStateBase.h"
+#include "GM_Character.h"
 #include "GM_Interface.h"
+#include "GM_SpawnVolume.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
@@ -24,7 +26,7 @@ void AGM_GameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	// "AI" 태그를 가진 모든 액터를 찾아서 배열에 저장
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("AI"), SpawnVolumes);
+	//UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("AI"), SpawnVolumes);
 
 	// GameState 초기화
 	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
@@ -42,6 +44,7 @@ void AGM_GameModeBase::BeginPlay()
 
 	// 첫 웨이브 시작
 	StartWave();
+	
 
 	// HUD 업데이트 타이머 시작 (1초마다)
 	GetWorldTimerManager().SetTimer(HUDUpdateTimerHandle, this, &AGM_GameModeBase::UpdateHUD, 1.0f, true);
@@ -52,15 +55,20 @@ void AGM_GameModeBase::StartWave()
 	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 	if (!MyGS) return;
 
-	MyGS->CurrentWaveIndex++;
 	MyGS->WaveDuration = WaveDuration;
 	MyGS->CurrentKillCount = 0;
-	MyGS->SpawnedMonster = InitialEnemyCount + (EnemyCountIncrease * (MyGS->CurrentWaveIndex - 1));
-
+	
+	//MyGS->SpawnedMonster = InitialEnemyCount + (EnemyCountIncrease * (MyGS->CurrentWaveIndex - 1));
+	// 
+	//SpawnVolume 스폰하기
 	SpawnEnemies();
+
+	MyGS->CurrentWaveIndex++;	// 웨이브 증가
 
 	// 웨이브 시간 타이머 시작
 	GetWorldTimerManager().SetTimer(WaveTimerHandle, this, &AGM_GameModeBase::OnWaveTimeUp, MyGS->WaveDuration, false);
+	
+	//SpawnEnemies();
 }
 
 void AGM_GameModeBase::EndWave(bool bIsCompleted)
@@ -76,6 +84,7 @@ void AGM_GameModeBase::EndWave(bool bIsCompleted)
 		// 마지막 웨이브였는지 확인
 		if (MyGS->CurrentWaveIndex >= MyGS->MaxWaveIndex)
 		{
+			UE_LOG(LogTemp, Error, TEXT("OnGameOver(ture)"))
 			OnGameOver(true); // 게임 승리
 		}
 		else
@@ -97,62 +106,98 @@ void AGM_GameModeBase::OnWaveTimeUp()
 void AGM_GameModeBase::SpawnEnemies()
 {
 	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
-	if (!MyGS || SpawnVolumes.Num() == 0 || !EnemyClass) return;
+	
 
-	for (int32 i = 0; i < MyGS->SpawnedMonster; ++i)
+	if (!MyGS || EnemyClass == nullptr) return;	// GameState 없고 EnemyClass 없을때 실행 X
+
+	MyGS->SpawnedMonster = MyGS->CurrentWaveIndex * EnemyCountIncrease;	// 현재 웨이브 + 적 증가량 
+	int32 SpawnCount = MyGS->SpawnedMonster;
+
+	// SPawnVolume 스폰
+	AGM_SpawnVolume* SpawnVolume = 
+		GetWorld()->SpawnActor<AGM_SpawnVolume>(EnemyClass, FVector::ZeroVector, FRotator::ZeroRotator);
+
+	SpawnVolume->SpawnAICharacter(SpawnCount); // SpawnCount만큼 적 생성
+	//UE_LOG(LogTemp, Error, TEXT("SpawnCount : %d , My->SpawnedMonster : %d"), SpawnCount,MyGS->SpawnedMonster)
+
+
+	
+
+	//if (!MyGS || SpawnVolumes.Num() == 0 || !EnemyClass) return;
+
+	//for (int32 i = 0; i < MyGS->SpawnedMonster; ++i)
+	//{
+	//	// 랜덤한 스폰 볼륨 선택
+	//	const int32 RandomVolumeIndex = FMath::RandRange(0, SpawnVolumes.Num() - 1);
+	//	AActor* TargetVolume = SpawnVolumes[RandomVolumeIndex];
+
+	//	// 볼륨에서 BoxComponent 찾기
+	//	UBoxComponent* BoxComponent = TargetVolume->FindComponentByClass<UBoxComponent>();
+	//	if (BoxComponent)
+	//	{
+	//		// BoxComponent의 경계 내에서 랜덤한 위치 생성
+	//		FVector SpawnOrigin = BoxComponent->Bounds.Origin;
+	//		FVector SpawnExtent = BoxComponent->Bounds.BoxExtent;
+	//		FVector SpawnLocation = FMath::RandPointInBox(FBox(SpawnOrigin - SpawnExtent, SpawnOrigin + SpawnExtent));
+
+	//		GetWorld()->SpawnActor<ACharacter>(EnemyClass, SpawnLocation, FRotator::ZeroRotator);
+	//	}
+	//}
+}
+
+// 적 잡은 수 증가
+void AGM_GameModeBase::OnEnemyKilled()
+{
+
+	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
+
+	if (MyGS)
 	{
-		// 랜덤한 스폰 볼륨 선택
-		const int32 RandomVolumeIndex = FMath::RandRange(0, SpawnVolumes.Num() - 1);
-		AActor* TargetVolume = SpawnVolumes[RandomVolumeIndex];
-
-		// 볼륨에서 BoxComponent 찾기
-		UBoxComponent* BoxComponent = TargetVolume->FindComponentByClass<UBoxComponent>();
-		if (BoxComponent)
+		//UE_LOG(LogTemp, Error, TEXT("MyGS->SpawnedMonster : %d, MyGS->CurrentKillCount : %d "), MyGS->SpawnedMonster, MyGS->CurrentKillCount)
+		if (MyGS->CurrentKillCount < MyGS->SpawnedMonster-1)		// 현재 죽인 수 < 적 스폰된 수 
 		{
-			// BoxComponent의 경계 내에서 랜덤한 위치 생성
-			FVector SpawnOrigin = BoxComponent->Bounds.Origin;
-			FVector SpawnExtent = BoxComponent->Bounds.BoxExtent;
-			FVector SpawnLocation = FMath::RandPointInBox(FBox(SpawnOrigin - SpawnExtent, SpawnOrigin + SpawnExtent));
-
-			GetWorld()->SpawnActor<ACharacter>(EnemyClass, SpawnLocation, FRotator::ZeroRotator);
+			MyGS->CurrentKillCount++;
+		}
+		else if(MyGS->CurrentKillCount == MyGS->SpawnedMonster-1)	//현재 죽인 수와 적 스폰된 수가 같을때 EndWave
+		{
+			UE_LOG(LogTemp, Error, TEXT("Win! CurrentWave : %d"), MyGS->CurrentWaveIndex)	
+			EndWave(true);
 		}
 	}
 }
 
-void AGM_GameModeBase::OnEnemyKilled()
-{
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
-	if (MyGS)
-	{
-		MyGS->CurrentKillCount++;
-	}
-}
-
+//코인 증가 처리
 void AGM_GameModeBase::AddCoin(int32 Amount)
 {
 	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 	if (MyGS)
 	{
-		MyGS->TotalCoin += Amount;
+		MyGS->TotalCoin += Amount;	// GameState의 TotalCoin 증가
 	}
 }
 
+// 코인 먹었을때 증가 및 버프 처리
 void AGM_GameModeBase::OnCoinCollected()
 {
+	UE_LOG(LogTemp, Error, TEXT("OnCoinCollected Call!"));
 	AddCoin(1);
 
 	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 	if (MyGS)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TotalCoin : %d"), MyGS->TotalCoin);
 		// 5 코인마다 버프 적용
 		if (MyGS->TotalCoin > 0 && MyGS->TotalCoin % 5 == 0)
 		{
-			ACharacter* MyCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
-			if (MyCharacter && MyCharacter->GetClass()->ImplementsInterface(UGM_Interface::StaticClass()))
+			AGM_Character* MyCharacter = Cast<AGM_Character>(GetWorld()->GetFirstPlayerController()->GetPawn());
+			//if (MyCharacter && MyCharacter->GetClass()->ImplementsInterface(UGM_Interface::StaticClass()))
+			if(MyCharacter)
 			{
 				// 인터페이스를 통해 캐릭터에 버프 적용
 				// IGM_Interface::Execute_ApplyBuff(MyCharacter, 1.5f);
-				UE_LOG(LogTemp, Warning, TEXT("Player buff applied! (Speed and Attack * 1.5f)"));
+				// 5코인마다 캐릭터 속도 3배 증가
+				MyCharacter->UpdateMovementSpeed(MyCharacter->NormalSpeed *= 3.0f);
+				UE_LOG(LogTemp, Warning, TEXT("Player buff applied! (Speed and Attack * 3.0f)"));
 			}
 		}
 	}
@@ -184,6 +229,8 @@ void AGM_GameModeBase::OnGameOver(bool bIsVictory)
 
 void AGM_GameModeBase::UpdateHUD()
 {
+	float Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(WaveTimerHandle);
+	UE_LOG(LogTemp, Warning, TEXT("Remaning Time : %f"), Remaning)	//남은 시간 출력
 	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 	if (MyGS && MyGS->GetClass()->ImplementsInterface(UGM_Interface::StaticClass()))
 	{

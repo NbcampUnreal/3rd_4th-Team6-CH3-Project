@@ -8,6 +8,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEndDelegate);
 
+class UBoxComponent;	// 박스 컴포넌트 추가
+
 UCLASS()
 class GIVEMETHEMONEY_API AGM_AICharacter : public ACharacter
 {
@@ -20,6 +22,10 @@ public:
 	FOnAttackEndDelegate OnAttackEnd;
 	UPROPERTY(EditAnywhere, Category = "AI|Attack")
 	UAnimMontage* AttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI|Attack")
+	UBoxComponent* AttackBoxCollision;	// 공격 범위 박스
+	UCapsuleComponent* CapsuleComp;	// 캐릭터 캡슐 콜리전
 
 	void Attack();
 	UFUNCTION()
@@ -42,12 +48,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")// 에디터에서 조정 가능
 	float Health;// 현재 체력
 
+	UPROPERTY(EditAnywhere, Category = "DropCoinClass")
+	TSubclassOf<class AGM_Coin> CoinClass;	//드랍할 코인
+
 	virtual float TakeDamage(
 		float DamageAmount,// 데미지 양
 		struct FDamageEvent const& DamageEvent,    // 데미지 이벤트 구조체 스킬 시스템이나 다른 시스템에서 데미지 이벤트를 처리할 때 사용
 		AController* EventInstigator,// 데미지를 입힌 주체 (플레이어, AI 등)
 		AActor* DamageCauser// 데미지를 입힌 원인 (무기, 폭발 등)
 	) override;// 데미지를 받았을 때 호출되는 함수 (기본 구현은 0을 반환, 자식 클래스에서 오버라이드 가능
+
+	void OnHitAttack();
 
 	void OnDeath();// 캐릭터가 죽었을 때 호출되는 함수
 

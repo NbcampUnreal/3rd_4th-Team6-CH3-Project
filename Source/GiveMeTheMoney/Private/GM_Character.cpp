@@ -24,7 +24,7 @@ AGM_Character::AGM_Character()
 	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);	//카메라 컴포넌트를 스프링암 끝 지점 부착
 	CameraComp->bUsePawnControlRotation = false;	// 컨트롤러로 카메라 회전 못하게 설정
 
-	NormalSpeed = 200.0f;	// 현재 속도 
+	NormalSpeed = 800.0f;	// 현재 속도 
 	SprintSpeedMultiplier = 3.0f;	// 곱해질 크기
 	SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 
@@ -233,6 +233,15 @@ void AGM_Character::StopCrouch()
 	ACharacter::UnCrouch(); // 웅크리기 해제
 	bIsCrouching = false;   // 직접 정의한 변수도 false로 변경
 	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
+}
+
+// 캐릭터 이동속도 업데이트
+void AGM_Character::UpdateMovementSpeed(float Speed)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;		//이동 속도 업데이트
+	}
 }
 
 void AGM_Character::BeginPlay()

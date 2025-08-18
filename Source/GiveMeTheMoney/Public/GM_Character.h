@@ -52,6 +52,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Crouch")
 	void StopCrouch();  // 웅크리기 멈춤
 
+	void UpdateMovementSpeed(float Speed);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float NormalSpeed; // 일반적인 걷기 속도
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -97,8 +102,7 @@ protected:
 
 	void OnDeath();// 캐릭터가 죽었을 때 호출되는 함수
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float NormalSpeed; // 일반적인 걷기 속도
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeed; // 질주 속도

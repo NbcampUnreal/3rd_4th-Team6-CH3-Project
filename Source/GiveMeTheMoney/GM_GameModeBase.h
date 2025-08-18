@@ -5,9 +5,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "GM_GameModeBase.generated.h"
 
-/**
- *
- */
+class AGM_SpawnVolume;	// 스폰 볼륨 전방선언
+
 UCLASS()
 class GIVEMETHEMONEY_API AGM_GameModeBase : public AGameModeBase
 {
@@ -18,13 +17,20 @@ public:
 
 	virtual void BeginPlay() override;
 
+	
+	//UPROPERTY(EditDefaultsOnly, Category = "SpawnVolume")
+	//TSubclassOf<AGM_SpawnVolume> SpawnVolumeClass;	// AI 스폰 볼륨 클래스
+
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume")
+	TArray<AGM_SpawnVolume*> SpawnVolumes;	// 스폰 볼륨 배열
+
 	void OnCoinCollected();
 	void AddCoin(int32 Amount);
 	void OnEnemyKilled();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game Wave")
-	TSubclassOf<ACharacter> EnemyClass;
+	TSubclassOf<AGM_SpawnVolume> EnemyClass;	// AI 액터 클래스저장
 
 	UPROPERTY(EditDefaultsOnly, Category = "Game Wave")
 	float WaveDuration;
@@ -35,10 +41,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game Wave")
 	int32 EnemyCountIncrease;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Game Wave")
+	UPROPERTY(EditAnywhere, Category = "Game Wave")
 	int32 MaxWaveIndex;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Game Wave")
+	UPROPERTY(EditAnywhere, Category = "Game Wave")
 	int32 MinKillCount;
 
 	void StartWave();
@@ -49,7 +55,7 @@ protected:
 	void UpdateHUD();
 
 private:
-	TArray<AActor*> SpawnVolumes;
+	
 	FTimerHandle WaveTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
 };

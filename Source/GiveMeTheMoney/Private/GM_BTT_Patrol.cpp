@@ -30,7 +30,7 @@ EBTNodeResult::Type UGM_BTT_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 	if (NavSystem->GetRandomPointInNavigableRadius(Origin, 500.0f, NextPatrol))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Next Patrol Location: %s"), *NextPatrol.Location.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("Next Patrol Location: %s"), *NextPatrol.Location.ToString());
 
 		OwnerComp.GetBlackboardComponent()->SetValueAsVector(AGM_AIController::PatrolPosKey, NextPatrol.Location);
 		return EBTNodeResult::Succeeded;

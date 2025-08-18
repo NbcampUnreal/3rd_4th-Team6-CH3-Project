@@ -46,7 +46,7 @@ void AWeaponProjectile::OnHitBullet(UPrimitiveComponent* OverlappedComp,
 		if (!OtherActor->ActorHasTag("Player"))	// 플레이어 캐릭터가 아닐때 검출
 		{
 			// Hit된 액터 로그 출력
-			UE_LOG(LogTemp, Warning, TEXT("BulletHit! OtherActor : %s"), *OtherActor->GetName());
+			// UE_LOG(LogTemp, Warning, TEXT("BulletHit! OtherActor : %s"), *OtherActor->GetName());
 			OnHitDamage(OtherActor, DamageAmount, this, UDamageType::StaticClass());	// 데미지 함수 호출
 			
 			//나이아가라 이펙트 설정되어있다면
