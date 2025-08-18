@@ -3,14 +3,16 @@
 #include "EnhancedInputSubsystems.h"
 
 AGM_Dummy_PlayerController::AGM_Dummy_PlayerController()
-	: InputMappingContext(nullptr), // 모든 입력 액션 초기화
+	: InputMappingContext(nullptr),        // 해당 입력 액션, 매핑 값은 전부 nullptr로 초기화
 	MoveAction(nullptr),
-	LookAction(nullptr),
 	JumpAction(nullptr),
-	ShotAction(nullptr),
-	ReloadAction(nullptr),
-	ChangeWeaponOneAction(nullptr),
-	ChangeWeaponTwoAction(nullptr)
+	LookAction(nullptr),
+	SprintAction(nullptr),
+	FireAction(nullptr),
+	CrouchAction(nullptr),
+	EquipWeapon1Action(nullptr),
+	EquipWeapon2Action(nullptr),
+	ReloadAction(nullptr)
 {
 }
 

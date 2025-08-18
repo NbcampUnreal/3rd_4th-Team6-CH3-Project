@@ -12,219 +12,363 @@
 // Sets default values
 ADummy_WeaponCharacter::ADummy_WeaponCharacter()
 {
+	PrimaryActorTick.bCanEverTick = false;
+
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArmComp->SetupAttachment(RootComponent);	// Root 컴포넌트로 설정
-	SpringArmComp->TargetArmLength = 350.0f;	// 스프링 암의 타겟 거리
-	SpringArmComp->bUsePawnControlRotation = true;	// 캐릭터의 회전을 사용
+	SpringArmComp->SetupAttachment(RootComponent);	//루트 컴포넌트 어태치
+	SpringArmComp->TargetArmLength = 300.0f;		// 스프링 암의 길이
+	SpringArmComp->bUsePawnControlRotation = true;	// 컨트롤러로 스프링 암 회전 사용
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-    CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);	// 스프링 암 컴포넌트로 Attach
-	CameraComp->bUsePawnControlRotation = false;	// 캐릭터의 회전을 사용하지 않음
+	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);	//카메라 컴포넌트를 스프링암 끝 지점 부착
+	CameraComp->bUsePawnControlRotation = false;	// 컨트롤러로 카메라 회전 못하게 설정
 
-	MoveSpeed = 600.0f;	// 캐릭터의 이동 속도
-	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;	// 캐릭터의 최대 이동 속도 설정
+	NormalSpeed = 200.0f;	// 현재 속도 
+	SprintSpeedMultiplier = 3.0f;	// 곱해질 크기
+	SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
+
+	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+	MaxHealth = 100.0f;	// 최대 체력 설정
+	Health = MaxHealth;	// 현재 체력 설정
+
 }
 
-
-// 입력 바인딩
-void ADummy_WeaponCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+// 입력 받은 값을 어떻게 처리 할 지 구현하는 곳
+void ADummy_WeaponCharacter::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	// EnhacnedInput 값 받기
-	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))	
+	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
+		//현재 캐릭터의 컨트롤러를 가져온 후 SpartaPlayerController로 캐스팅
 		if (AGM_Dummy_PlayerController* PlayerController = Cast<AGM_Dummy_PlayerController>(GetController()))
 		{
-			if (PlayerController->MoveAction)	//Move 입력 바인딩
+			if (PlayerController->MoveAction)	// W,A,S,D 움직임 입력 처리
 			{
-				EnhancedInput->BindAction(	
+				EnhancedInput->BindAction(
 					PlayerController->MoveAction,
-					ETriggerEvent::Triggered,
-					this,
-					&ADummy_WeaponCharacter::Move
+					ETriggerEvent::Triggered,	// 키가 입력 되었을 때
+					this,						// 호출된 객체
+					&ADummy_WeaponCharacter::Move		// 객체의 Move 함수를 연결
 				);
 			}
 
-			if (PlayerController->LookAction)	//Look 입력 바인딩
+			if (PlayerController->LookAction)	// 카메라 시선 입력 처리
 			{
-				EnhancedInput->BindAction(	
+				EnhancedInput->BindAction(
 					PlayerController->LookAction,
-					ETriggerEvent::Triggered,
-					this,
-					&ADummy_WeaponCharacter::Look
+					ETriggerEvent::Triggered,	// 키가 입력 되었을 때
+					this,						// 호출된 객체
+					&ADummy_WeaponCharacter::Look		// 객체의 Look 함수를 연결
 				);
 			}
 
-			if (PlayerController->JumpAction)	//Jump 입력 바인딩
+			if (PlayerController->JumpAction)	//점프 입력 처리
 			{
 				EnhancedInput->BindAction(
 					PlayerController->JumpAction,
-					ETriggerEvent::Started,
-					this,
-					&ADummy_WeaponCharacter::StartJumpEvent
+					ETriggerEvent::Triggered,	// 키가 입력 되었을 때
+					this,						// 호출된 객체
+					&ADummy_WeaponCharacter::StartJump		// 점프 키를 눌렀을 때 입력 처리
+				);
+
+				EnhancedInput->BindAction(
+					PlayerController->JumpAction,
+					ETriggerEvent::Completed,	// 키를 뗀 순간 StopJump 호출
+					this,						// 호출된 객체
+					&ADummy_WeaponCharacter::StopJump		// 점프 키를 떼었을 때 입력 처리
 				);
 			}
 
-			if (PlayerController->ShotAction)	//Shot 입력 바인딩
+			if (PlayerController->SprintAction)		// 질주 입력 처리
 			{
 				EnhancedInput->BindAction(
-					PlayerController->ShotAction,
-					ETriggerEvent::Started,	// Shot 한번 입력
+					PlayerController->SprintAction,
+					ETriggerEvent::Triggered,	// 키가 입력 되었을 때
+					this,						// 호출된 객체
+					&ADummy_WeaponCharacter::StartSprint		// 질주 키를 눌렀을 때 입력 처리
+				);
+
+				EnhancedInput->BindAction(
+					PlayerController->SprintAction,
+					ETriggerEvent::Completed,	// 키를 뗀 순간 StopSprint 호출
+					this,						// 호출된 객체
+					&ADummy_WeaponCharacter::StopSprint	// 질주 키를 떼었을 때 입력 처리
+				);
+			}
+			if (PlayerController->CrouchAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->CrouchAction,
+					ETriggerEvent::Started, // Triggered 이벤트를 사용
 					this,
-					&ADummy_WeaponCharacter::Shot
+					&ADummy_WeaponCharacter::Crouch
+				);
+			}
+			if (PlayerController->FireAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->FireAction,
+					ETriggerEvent::Started, // 키를 누르는 순간
+					this,
+					&ADummy_WeaponCharacter::Fire
+				);
+			}
+			if (PlayerController->EquipWeapon1Action)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->EquipWeapon1Action,
+					ETriggerEvent::Started, // 키가 눌렸을 때
+					this,
+					&ADummy_WeaponCharacter::EquipWeapon1
 				);
 			}
 
-			if (PlayerController->ReloadAction)	//Reload 입력 바인딩
+			if (PlayerController->EquipWeapon2Action)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->EquipWeapon2Action,
+					ETriggerEvent::Started, // 키가 눌렸을 때
+					this,
+					&ADummy_WeaponCharacter::EquipWeapon2
+				);
+			}
+
+			if (PlayerController->ReloadAction)
 			{
 				EnhancedInput->BindAction(
 					PlayerController->ReloadAction,
-					ETriggerEvent::Started,	// Reload 한번 입력
+					ETriggerEvent::Started, // 키가 눌렸을 때
 					this,
 					&ADummy_WeaponCharacter::Reload
 				);
 			}
-			
-			if (PlayerController->ChangeWeaponOneAction)	//1번 무기 변경 입력 바인딩
-			{
-				EnhancedInput->BindAction(
-					PlayerController->ChangeWeaponOneAction,
-					ETriggerEvent::Started,	// Reload 한번 입력
-					this,
-					&ADummy_WeaponCharacter::ChangeWeaponOne
-				);
-			}
-
-			if (PlayerController->ChangeWeaponTwoAction)	//2번 무기 변경 입력 바인딩
-			{
-				EnhancedInput->BindAction(
-					PlayerController->ChangeWeaponTwoAction,
-					ETriggerEvent::Started,	// Reload 한번 입력
-					this,
-					&ADummy_WeaponCharacter::ChangeWeaponTwo
-				);
-			}
 		}
 	}
+}
+
+void ADummy_WeaponCharacter::Move(const FInputActionValue & value)	// value : 2D vector 값으로 들어옴
+{
+	if (!Controller)	return;	//캐릭터가 유효한지 확인 (존재하지 않다면 return)
+
+	const FVector2D MoveInput = value.Get<FVector2D>();		//value 값을 2DVector로 입력 받아 MoveInput에 저장
+
+	if (!FMath::IsNearlyZero(MoveInput.X))	// 입력 값이 0이 아니라면
+	{
+		AddMovementInput(GetActorForwardVector(), MoveInput.X);	//해당 액터의 정면으로 X만큼 이동
+	}
+
+	if (!FMath::IsNearlyZero(MoveInput.Y))
+	{
+		AddMovementInput(GetActorRightVector(), MoveInput.Y);	// 해당 액터의 오른쪽으로 Y만큼 이동
+	}
+}
+
+void ADummy_WeaponCharacter::Look(const FInputActionValue & value)	// 시선 처리를 위한 마우스 좌표 값으로 2D Vector로 값을 받아옴
+{
+	FVector2D LookInput = value.Get<FVector2D>();	// 2D Vecotr 값을 저장
+
+	AddControllerYawInput(LookInput.X);		// 좌, 우 입력
+	AddControllerPitchInput(-LookInput.Y);	// 상, 하 입력
+}
+
+void ADummy_WeaponCharacter::StartJump(const FInputActionValue & value) // value : Digit 값으로 true/false 값을 가지고 있음
+{
+	if (value.Get<bool>())	//Jump입력이 True일 때 StartJump 함수 실행
+	{
+		Jump();		// 언리얼 기본 제공 캐릭터 점프 기능
+	}
+}
+
+void ADummy_WeaponCharacter::StopJump(const FInputActionValue & value)
+{
+	if (!value.Get<bool>())	//Jump입력이 False일 때 StopJump 함수 실행
+	{
+		StopJumping();		// 언리얼 기본 제공 캐릭터 점프 멈추는 기능
+	}
+}
+
+void ADummy_WeaponCharacter::StartSprint(const FInputActionValue & value)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;		// 가속 키 입력시 즉시 Sprint속도로 변환
+	}
+}
+
+void ADummy_WeaponCharacter::StopSprint(const FInputActionValue & value)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;		// 가속 키 떼었을 때 즉시 Normal속도로 변환
+	}
+}
+
+void ADummy_WeaponCharacter::Crouch(const FInputActionValue & value)
+{
+	// 입력 값과 관계없이, 함수가 호출되면 바로 토글 로직 실행
+	if (bIsCrouching)
+	{
+		StopCrouch();
+	}
+	else
+	{
+		StartCrouch();
+	}
+}
+
+void ADummy_WeaponCharacter::StartCrouch()
+{
+	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
+	{
+		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
+		bIsCrouching = true;  // 직접 정의한 변수도 true로 변경
+		/*UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));*/
+	}
+}
+
+void ADummy_WeaponCharacter::StopCrouch()
+{
+	ACharacter::UnCrouch(); // 웅크리기 해제
+	bIsCrouching = false;   // 직접 정의한 변수도 false로 변경
+	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
 }
 
 void ADummy_WeaponCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//Rifle = GetWorld()->SpawnActor<AGM_Weapon_Rifle>(	// Rifle 생성
-	//	AGM_Weapon_Rifle::StaticClass(),
-	//	GetMesh()->GetSocketLocation("Muzzle"),	//총구 위치와 회전값
-	//	GetMesh()->GetSocketRotation("Muzzle")
-	//);
-	//Shotgun = GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(	// Shotgun 생성
-	//	AGM_Weapon_Shotgun::StaticClass(),
-	//	GetMesh()->GetSocketLocation("Muzzle"),	//총구 위치와 회전값
-	//	GetMesh()->GetSocketRotation("Muzzle")
-	//);
-	
-	UpdateMuzzleTransform();		// 총구 위치와 회전값 업데이트
-	// Rifle 와 Shotgun 클래스가 존재한다면 스폰
-	if (Rifle && Shotgun) 
+	UpdateMuzzleTransform();	// 총구 위치 업데이트
+	// Rife, Shotgun 무기 스폰
+	if (Rifle && Shotgun)
 	{
 		WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Rifle>(Rifle, MuzzleSocketLocation, MuzzleSocketRotation));
 		WeaponInventory.Add(GetWorld()->SpawnActor<AGM_Weapon_Shotgun>(Shotgun, MuzzleSocketLocation, MuzzleSocketRotation));
-		
+
 		CurrentWeapon = WeaponInventory[0];	// 시작무기는 Rifle
 	}
 }
 
-// 이동 입력 이벤트 
-void ADummy_WeaponCharacter::Move(const FInputActionValue& value)
+//void ADummy_WeaponCharacter::Crouch(const FInputActionValue& value)
+//{
+//	if (value.Get<bool>()) // 웅크리기 키가 눌렸을 때
+//	{
+//		if (bIsCrouching)
+//		{
+//			StopCrouch();
+//		}
+//		else
+//		{
+//			StartCrouch();
+//		}
+//	}
+//}
+//
+//void ADummy_WeaponCharacter::StartCrouch()
+//{
+//	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
+//	{
+//		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
+//		bIsCrouching = true;
+//		// 필요하다면, 여기에 웅크리기 애니메이션 재생 로직을 추가
+//		/*UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));*/
+//	}
+//}
+//
+//void ADummy_WeaponCharacter::StopCrouch()
+//{
+//	ACharacter::UnCrouch(); // 웅크리기 해제
+//	bIsCrouching = false;
+//	// 필요하다면, 여기에 웅크리기 해제 애니메이션 재생 로직을 추가
+//	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
+//}
+
+
+
+float ADummy_WeaponCharacter::GetHealth() const	// 현재 체력을 반환하는 함수
 {
-	if(!Controller) return;	// 캐릭터가 없으면 Return
-	
-	const FVector2D MoveInput = value.Get<FVector2D>();	// 이동 입력값을 FVector2D로 받음 (W,S) : X , (A,D) : Y
-	
-	const FRotator ControlRotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0, ControlRotation.Yaw, 0);	// Z축(Yaw) 회전값 저장
+	return Health;
+}
 
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);	// X축(전방) 방향 벡터
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);	// Y축(우측) 방향 벡터
-	
+void ADummy_WeaponCharacter::AddHealth(float Amount) {	// 체력을 증가시키는 함수
+	if (Amount <= 0.0f) return;	// 증가할 양이 0 이하라면 아무것도 하지 않음
 
-	if (!FMath::IsNearlyZero(MoveInput.X))	// W,S 전방 이동
+	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);	// 현재 체력을 증가시키고 0과 MaxHealth 사이로 제한
+	UE_LOG(LogTemp, Warning, TEXT("Health increased to: %f"), Health);	// 현재 체력 로그 출력
+}
+
+float ADummy_WeaponCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+	AController * EventInstigator, AActor * DamageCauser)
+{
+	// ActualDamage는 부모 클래스의 TakeDamage를 호출하여 기본 데미지 처리 로직을 가져온다.
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);	// 부모 클래스의 TakeDamage 호출
+
+	Health = FMath::Clamp(Health - DamageAmount, 0.0f, MaxHealth);	// 현재 체력을 감소시키고 0과 MaxHealth 사이로 제한
+	UE_LOG(LogTemp, Warning, TEXT("Health decreased to: %f"), Health);	// 현재 체력 로그 출력
+
+	if (Health <= 0.0f)
 	{
-		AddMovementInput(ForwardDirection, MoveInput.X);
+		OnDeath();	// 체력이 0 이하가 되면 OnDeath 함수를 호출
 	}
-	
-	if (!FMath::IsNearlyZero(MoveInput.Y))	// A,D  왼,오른쪽 이동
-	{
-		AddMovementInput(RightDirection, MoveInput.Y);
-	}
+
+	return 0.0f;
 }
 
-// 회전 입력 이벤트
-void ADummy_WeaponCharacter::Look(const FInputActionValue& value)
-{
-	FVector2D LookInput = value.Get<FVector2D>();
-
-	AddControllerYawInput(LookInput.X);	// Yaw 회전
-	AddControllerPitchInput(LookInput.Y);	// Pitch 회전
-}
-
-// 점프  이벤트
-void ADummy_WeaponCharacter::StartJumpEvent(const FInputActionValue& value)
-{
-	Jump();
-}
-
-// Shot 입력 이벤트
-void ADummy_WeaponCharacter::Shot(const FInputActionValue& value)
+void ADummy_WeaponCharacter::Fire(const FInputActionValue & Value)
 {
 	if (CurrentWeapon)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Shot!!!")));
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Fire!!!")));
 		// 총알 스폰 위치 업데이트 및 발사
 		UpdateMuzzleTransform();
 		CurrentWeapon->SetActorLocation(MuzzleSocketLocation);
 		CurrentWeapon->SetActorRotation(MuzzleSocketRotation);
-		CurrentWeapon->ShootBullet();	// 클릭시 선택한 무기 (현재는 Shotgun) 발사
-	}
-}
-
-// Reload 입력 이벤트
-void ADummy_WeaponCharacter::Reload(const FInputActionValue& value)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, FString::Printf(TEXT("Reload!!!")));
-}
-
-// 1번 무기 변경 입력 이벤트
-void ADummy_WeaponCharacter::ChangeWeaponOne(const FInputActionValue& value)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Magenta, FString::Printf(TEXT("ChangeWeaponOne!!")));
-	SwitchWeapon(0);	// Rifle 무기 변경
-}
-
-// 2번 무기 변경 입력 이벤트
-void ADummy_WeaponCharacter::ChangeWeaponTwo(const FInputActionValue& value)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Magenta, FString::Printf(TEXT("ChangeWeaponTwo!!")));
-	SwitchWeapon(1);	// Shotgun 무기 변경
-}
-
-// 무기 변경
-void ADummy_WeaponCharacter::SwitchWeapon(int32 WeaponIndex)
-{
-	if (WeaponInventory.IsValidIndex(WeaponIndex))
-	{
-		CurrentWeapon = WeaponInventory[WeaponIndex];	// 무기 변경
-		if (CurrentWeapon)
+		if (int32 CurrentAmmo = CurrentWeapon->GetAmmo() <= 0)
 		{
-			CurrentWeapon->Activate();	// 무기에 맞는 Activate 실행
+			UE_LOG(LogTemp, Warning, TEXT("You Should Reload"));	//탄약 부족시 재장전 필요 출력
+			return;
 		}
+		CurrentWeapon->ShootBullet();	// 클릭시 선택한 무기 (현재는 Shotgun) 발사
+		UE_LOG(LogTemp, Warning, TEXT("%d/%d"), CurrentWeapon->GetAmmo(), CurrentWeapon->MaxAmmo);
+		CurrentWeapon->CurrentAmmo -= 1;	// 탄약 감소
 	}
 }
 
-// 총구 위치 업데이트
+void ADummy_WeaponCharacter::EquipWeapon1(const FInputActionValue & value)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Equip 1st Weatpon");
+	if (WeaponInventory.IsValidIndex(0))
+	{
+		CurrentWeapon = WeaponInventory[0];	// 1번 Rifle 장착
+	}
+}
+
+void ADummy_WeaponCharacter::EquipWeapon2(const FInputActionValue & value)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Equip 2th Weapon");
+	if (WeaponInventory.IsValidIndex(1))
+	{
+		CurrentWeapon = WeaponInventory[1];	// 2번 Shotgun 장착
+	}
+}
+
+void ADummy_WeaponCharacter::Reload(const FInputActionValue & value)
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Reload();	// 현재 무기 재장전
+	}
+}
+
 void ADummy_WeaponCharacter::UpdateMuzzleTransform()
 {
 	MuzzleSocketLocation = GetMesh()->GetSocketLocation("Muzzle");
 	MuzzleSocketRotation = GetMesh()->GetSocketRotation("Muzzle");
+}
+
+
+void ADummy_WeaponCharacter::OnDeath()
+{
+	// 게임 종료 로직 구현 예정
+
 }
