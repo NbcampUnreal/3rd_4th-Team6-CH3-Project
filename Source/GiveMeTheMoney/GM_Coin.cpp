@@ -6,7 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "GM_GameModeBase.h"
+#include "GameModes/GM_GameModeBase.h"
 
 // Sets default values
 AGM_Coin::AGM_Coin()
@@ -40,11 +40,19 @@ void AGM_Coin::Tick(float DeltaTime)
 
 void AGM_Coin::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (OtherActor == GetOwner()) return;
+
 	AGameModeBase* GameMode = UGameplayStatics::GetGameMode(this);
 	if (AGM_GameModeBase* MyGameMode = Cast<AGM_GameModeBase>(GameMode))
 	{
-		MyGameMode->OnCoinCollected();
-		Destroy();
+		if (OtherActor != this && OtherComp && OtherActor)	// 다른 액터가 자기자신 아니고 컴포넌트, 액터가 오버랩되었을때
+		{
+			if (OtherActor->ActorHasTag("Player"))	// 플레이어 오버랩 시 
+			{
+				MyGameMode->OnCoinCollected();
+				Destroy();
+			}
+		}
 	}
 }
 
