@@ -11,8 +11,8 @@ class USpringArmComponent;// 미리 선언
 class UCameraComponent;// 스프링 암, 카메라 컴포넌트 클래스를 사용할 수 있도록 선언
 class UInputMappingContext;
 class UInputAction;
+class AGM_GameModeBase;
 struct FInputActionValue;// Move 입력 값을 받기 위한 구조체 선언
-
 
 UCLASS()
 class GIVEMETHEMONEY_API AGM_Character : public ACharacter
@@ -53,12 +53,15 @@ public:
 	void StopCrouch();  // 웅크리기 멈춤
 
 	void UpdateMovementSpeed(float Speed);
+	void StopMovement();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float NormalSpeed; // 일반적인 걷기 속도
 
 protected:
 	virtual void BeginPlay() override;
+
+	AGM_GameModeBase* MyGM;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")// 에디터에서 조정 가능
 		float MaxHealth;// 최대 체력

@@ -1,9 +1,13 @@
 
 #include "GM_GameModeBase.h"
+
+#include "Blueprint/UserWidget.h"
 #include "GM_GameStateBase.h"
 #include "GM_Character.h"
+#include "GM_Controller_Character.h"
 #include "GM_Interface.h"
 #include "GM_SpawnVolume.h"
+#include "GM_GameHUDWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
@@ -19,17 +23,17 @@ AGM_GameModeBase::AGM_GameModeBase()
 	EnemyCountIncrease = 5;
 	MaxWaveIndex = 5;
 	MinKillCount = 10;
+	
 }
 
 void AGM_GameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// "AI" 태그를 가진 모든 액터를 찾아서 배열에 저장
-	//UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("AI"), SpawnVolumes);
+	PlayerCharacter = Cast<AGM_Character>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
 	// GameState 초기화
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
+	 MyGS = GetGS();
 	if (MyGS)
 	{
 		MyGS->MaxWaveIndex = MaxWaveIndex;
@@ -42,49 +46,94 @@ void AGM_GameModeBase::BeginPlay()
 		}
 	}
 
-	// 첫 웨이브 시작
-	StartWave();
+	
+	// 시작 메뉴 위젯 표시
+	if (HUDWidgetClass)	
+	{
+		HUDWidget = CreateWidget<UGM_GameHUDWidget>(GetWorld(), HUDWidgetClass);	// 위젯 생성
+		if (HUDWidget)
+		{
+			HUDWidget->AddToViewport();		// 뷰포트 표시
+			HUDWidget->ShowStartScreen();	// 시작 화면 표시
+			HUDWidget->UpdateHP(PlayerCharacter->GetHealth(), 500);
+		}
+	}
+
+	
 	
 
-	// HUD 업데이트 타이머 시작 (1초마다)
-	GetWorldTimerManager().SetTimer(HUDUpdateTimerHandle, this, &AGM_GameModeBase::UpdateHUD, 1.0f, true);
+	// Input Mode 설정
+	if (AGM_Controller_Character* PlayerController = Cast<AGM_Controller_Character>(GetWorld()->GetFirstPlayerController()))
+	{
+		FInputModeUIOnly InputMode;	// Input 모드 구조체 선언
+		InputMode.SetWidgetToFocus(HUDWidget->TakeWidget());		// 위젯 포커스 설정
+		PlayerController->SetInputMode(InputMode);				// UI 에만 입력가능하도록 설정
+		PlayerController->SetShowMouseCursor(true);				// 마우스 표시
+	}
+
+
+	
 }
 
 void AGM_GameModeBase::StartWave()
 {
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 	if (!MyGS) return;
 
+	//UE_LOG(LogTemp, Warning, TEXT("Start Wave!, CurrentWave : %d"), MyGS->CurrentWaveIndex)	// 현재웨이브 로그 출력
+	
+	// 현재 웨이브 조건들 초기화 (현재 킬수 웨이브 남은 시간)
 	MyGS->WaveDuration = WaveDuration;
 	MyGS->CurrentKillCount = 0;
 	
-	//MyGS->SpawnedMonster = InitialEnemyCount + (EnemyCountIncrease * (MyGS->CurrentWaveIndex - 1));
-	// 
-	//SpawnVolume 스폰하기
-	SpawnEnemies();
 
-	MyGS->CurrentWaveIndex++;	// 웨이브 증가
 
+	//AI 캐릭터 스폰하기		
+	SpawnEnemies();	
+
+	// HUD 업데이트 타이머 시작 (1초마다)
+	GetWorldTimerManager().SetTimer(HUDUpdateTimerHandle, this, &AGM_GameModeBase::UpdateHUD, 0.2f, true);
 	// 웨이브 시간 타이머 시작
 	GetWorldTimerManager().SetTimer(WaveTimerHandle, this, &AGM_GameModeBase::OnWaveTimeUp, MyGS->WaveDuration, false);
-	
-	//SpawnEnemies();
+
+	if (HUDWidget)
+	{
+		HUDWidget->ShowWaveStart(MyGS->CurrentWaveIndex);	// 웨이브 시작 메세지 중앙 표시
+		
+	}
+
+	// Input Mode 를 Game Only로 변경
+	if (AGM_Controller_Character* PlayerController = Cast<AGM_Controller_Character>(GetWorld()->GetFirstPlayerController()))
+	{
+		FInputModeGameOnly InputMode;	// Input 모드 구조체 선언
+		PlayerController->SetInputMode(InputMode);				// UI 에만 입력가능하도록 설정
+		PlayerController->SetShowMouseCursor(false);				// 마우스 표시
+	}
+
+	MyGS->CurrentWaveIndex++;	//  웨이브 인덱스 증가
+}
+
+void AGM_GameModeBase::UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo)
+{
+	if (HUDWidget)
+	{
+		HUDWidget->UpdateAmmo(PlayerCharacter->CurrentWeapon->CurrentAmmo, PlayerCharacter->CurrentWeapon->MaxAmmo);
+	}
 }
 
 void AGM_GameModeBase::EndWave(bool bIsCompleted)
 {
+	// 타이머 핸들러 초기화
 	GetWorldTimerManager().ClearTimer(WaveTimerHandle);
+	GetWorldTimerManager().ClearTimer(HUDUpdateTimerHandle);
 
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 	if (!MyGS) return;
 
 	// 웨이브 성공/실패 조건 확인
 	if (bIsCompleted && MyGS->CurrentKillCount >= MyGS->MinKillCount)
 	{
 		// 마지막 웨이브였는지 확인
-		if (MyGS->CurrentWaveIndex >= MyGS->MaxWaveIndex)
+		if (MyGS->CurrentWaveIndex > MyGS->MaxWaveIndex)
 		{
-			UE_LOG(LogTemp, Error, TEXT("OnGameOver(ture)"))
 			OnGameOver(true); // 게임 승리
 		}
 		else
@@ -100,14 +149,21 @@ void AGM_GameModeBase::EndWave(bool bIsCompleted)
 
 void AGM_GameModeBase::OnWaveTimeUp()
 {
-	EndWave(false); // 시간이 다 되면 웨이브 실패
+	// AI 잡은 후 최소 AI 캐릭 수 이상 웨이브 시간 종료시 생존 후 다음 웨이브 호출
+	if (!MyGS) return;
+
+	if (MyGS->CurrentKillCount >= MyGS->MinKillCount)	// Kill 수가 최소 킬수 이상일때 true
+	{
+		EndWave(true);
+	}
+	else
+	{
+		EndWave(false); // 시간이 다 되면 웨이브 실패
+	}
 }
 
 void AGM_GameModeBase::SpawnEnemies()
 {
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
-	
-
 	if (!MyGS || EnemyClass == nullptr) return;	// GameState 없고 EnemyClass 없을때 실행 X
 
 	MyGS->SpawnedMonster = MyGS->CurrentWaveIndex * EnemyCountIncrease;	// 현재 웨이브 + 적 증가량 
@@ -119,37 +175,11 @@ void AGM_GameModeBase::SpawnEnemies()
 
 	SpawnVolume->SpawnAICharacter(SpawnCount); // SpawnCount만큼 적 생성
 	//UE_LOG(LogTemp, Error, TEXT("SpawnCount : %d , My->SpawnedMonster : %d"), SpawnCount,MyGS->SpawnedMonster)
-
-
-	
-
-	//if (!MyGS || SpawnVolumes.Num() == 0 || !EnemyClass) return;
-
-	//for (int32 i = 0; i < MyGS->SpawnedMonster; ++i)
-	//{
-	//	// 랜덤한 스폰 볼륨 선택
-	//	const int32 RandomVolumeIndex = FMath::RandRange(0, SpawnVolumes.Num() - 1);
-	//	AActor* TargetVolume = SpawnVolumes[RandomVolumeIndex];
-
-	//	// 볼륨에서 BoxComponent 찾기
-	//	UBoxComponent* BoxComponent = TargetVolume->FindComponentByClass<UBoxComponent>();
-	//	if (BoxComponent)
-	//	{
-	//		// BoxComponent의 경계 내에서 랜덤한 위치 생성
-	//		FVector SpawnOrigin = BoxComponent->Bounds.Origin;
-	//		FVector SpawnExtent = BoxComponent->Bounds.BoxExtent;
-	//		FVector SpawnLocation = FMath::RandPointInBox(FBox(SpawnOrigin - SpawnExtent, SpawnOrigin + SpawnExtent));
-
-	//		GetWorld()->SpawnActor<ACharacter>(EnemyClass, SpawnLocation, FRotator::ZeroRotator);
-	//	}
-	//}
 }
 
 // 적 잡은 수 증가
 void AGM_GameModeBase::OnEnemyKilled()
 {
-
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 
 	if (MyGS)
 	{
@@ -169,10 +199,13 @@ void AGM_GameModeBase::OnEnemyKilled()
 //코인 증가 처리
 void AGM_GameModeBase::AddCoin(int32 Amount)
 {
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 	if (MyGS)
 	{
 		MyGS->TotalCoin += Amount;	// GameState의 TotalCoin 증가
+		if (HUDWidget)
+		{
+			HUDWidget->UpdateStats(MyGS->TotalCoin);	// 위젯 업데이트(Kill, Coin 표시)
+		}
 	}
 }
 
@@ -182,7 +215,6 @@ void AGM_GameModeBase::OnCoinCollected()
 	UE_LOG(LogTemp, Error, TEXT("OnCoinCollected Call!"));
 	AddCoin(1);
 
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 	if (MyGS)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("TotalCoin : %d"), MyGS->TotalCoin);
@@ -208,17 +240,36 @@ void AGM_GameModeBase::OnGameOver(bool bIsVictory)
 	// 모든 타이머 중지
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 
+	PlayerCharacter->StopMovement();
+
+	// Input Mode 설정
+	if (AGM_Controller_Character* PlayerController = Cast<AGM_Controller_Character>(GetWorld()->GetFirstPlayerController()))
+	{
+		FInputModeUIOnly InputMode;	// Input 모드 구조체 선언
+		InputMode.SetWidgetToFocus(HUDWidget->TakeWidget());		// 위젯 포커스 설정
+		PlayerController->SetInputMode(InputMode);				// UI 에만 입력가능하도록 설정
+		PlayerController->SetShowMouseCursor(true);				// 마우스 표시
+	}
+
 	if (bIsVictory)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Game Won!"));
+		if (HUDWidget)
+		{
+			HUDWidget->ShowGameOver(true, MyGS->TotalCoin);	// 게임종료 후 코인갯수 표시
+		}
+
 	}
 	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("Game Over!"));
+		if (HUDWidget)
+		{
+			HUDWidget->ShowGameOver(false, MyGS->TotalCoin);
+		}
 	}
 
 	// GameState를 통해 모든 클라이언트에게 게임 오버 신호를 보냅니다.
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
 	if (MyGS && MyGS->GetClass()->ImplementsInterface(UGM_Interface::StaticClass()))
 	{
 		IGM_Interface::Execute_OnGameOver(MyGS, bIsVictory);
@@ -229,16 +280,16 @@ void AGM_GameModeBase::OnGameOver(bool bIsVictory)
 
 void AGM_GameModeBase::UpdateHUD()
 {
-	float Remaning = GetWorld()->GetTimerManager().GetTimerRemaining(WaveTimerHandle);
-	UE_LOG(LogTemp, Warning, TEXT("Remaning Time : %f"), Remaning)	//남은 시간 출력
-	AGM_GameStateBase* MyGS = GetGameState<AGM_GameStateBase>();
-	if (MyGS && MyGS->GetClass()->ImplementsInterface(UGM_Interface::StaticClass()))
-	{
-		// GameState의 최신 정보로 인터페이스 함수 호출
-		IGM_Interface::Execute_UpdateCoin(MyGS, MyGS->TotalCoin);
-		IGM_Interface::Execute_UpdateWave(MyGS, MyGS->CurrentWaveIndex, MyGS->MaxWaveIndex);
-		IGM_Interface::Execute_UpdateGameTimer(MyGS, GetWorld()->GetTimeSeconds()); // 전체 게임 시간
-		IGM_Interface::Execute_UpdateWaveTimer(MyGS, GetWorldTimerManager().GetTimerRemaining(WaveTimerHandle));
-		IGM_Interface::Execute_UpdateKillCount(MyGS, MyGS->CurrentKillCount, MyGS->MinKillCount);
+	float RemainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(WaveTimerHandle); // 남은 시간
+
+	if(HUDWidget)
+	{ 
+		HUDWidget->UpdateTime(static_cast<int32>(RemainingTime));	// 남은시간 위젯 표시
 	}
+
+}
+
+AGM_GameStateBase* AGM_GameModeBase::GetGS() const
+{
+	return GetGameState<AGM_GameStateBase>();
 }

@@ -3,6 +3,7 @@
 
 #include "GM_Character.h"
 #include "GM_Controller_Character.h"
+#include "../GM_GameModeBase.h"
 #include "EnhancedInputComponent.h"		// EnhancedInput 바인딩을 사용하기 위한 헤더파일
 #include "Camera/CameraComponent.h"
 #include "Weapon/GM_Weapon_Rifle.h"
@@ -247,6 +248,7 @@ void AGM_Character::UpdateMovementSpeed(float Speed)
 void AGM_Character::BeginPlay()
 {
 	Super::BeginPlay();
+	MyGM = GetWorld()->GetAuthGameMode<AGM_GameModeBase>();
 
 	UpdateMuzzleTransform();	// 총구 위치 업데이트
 	// Rife, Shotgun 무기 스폰
@@ -258,40 +260,6 @@ void AGM_Character::BeginPlay()
 		CurrentWeapon = WeaponInventory[0];	// 시작무기는 Rifle
 	}
 }
-
-//void AGM_Character::Crouch(const FInputActionValue& value)
-//{
-//	if (value.Get<bool>()) // 웅크리기 키가 눌렸을 때
-//	{
-//		if (bIsCrouching)
-//		{
-//			StopCrouch();
-//		}
-//		else
-//		{
-//			StartCrouch();
-//		}
-//	}
-//}
-//
-//void AGM_Character::StartCrouch()
-//{
-//	if (CanCrouch()) // 언리얼의 기본 함수를 사용하여 웅크릴 수 있는지 확인
-//	{
-//		ACharacter::Crouch(); // 캐릭터를 웅크리게 함
-//		bIsCrouching = true;
-//		// 필요하다면, 여기에 웅크리기 애니메이션 재생 로직을 추가
-//		/*UE_LOG(LogTemp, Warning, TEXT("Character is crouching."));*/
-//	}
-//}
-//
-//void AGM_Character::StopCrouch()
-//{
-//	ACharacter::UnCrouch(); // 웅크리기 해제
-//	bIsCrouching = false;
-//	// 필요하다면, 여기에 웅크리기 해제 애니메이션 재생 로직을 추가
-//	/*UE_LOG(LogTemp, Warning, TEXT("Character stopped crouching."));*/
-//}
 
 
 
@@ -326,9 +294,10 @@ float AGM_Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 
 void AGM_Character::Fire(const FInputActionValue& Value)
 {
+	
 	if (CurrentWeapon)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Fire!!!")));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Fire!!!")));
 		// 총알 스폰 위치 업데이트 및 발사
 		UpdateMuzzleTransform();
 		CurrentWeapon->SetActorLocation(MuzzleSocketLocation);
@@ -339,8 +308,10 @@ void AGM_Character::Fire(const FInputActionValue& Value)
 			return;
 		}
 		CurrentWeapon->ShootBullet();	// 클릭시 선택한 무기 (현재는 Shotgun) 발사
+		
 		UE_LOG(LogTemp, Warning, TEXT("%d/%d"), CurrentWeapon->GetAmmo(), CurrentWeapon->MaxAmmo);
 		CurrentWeapon->CurrentAmmo -= 1;	// 탄약 감소
+		MyGM->UpdateAmmo(CurrentWeapon->CurrentAmmo, CurrentWeapon->MaxAmmo);	// 탄약 표시 위젯 업데이트
 	}
 }
 
@@ -367,6 +338,7 @@ void AGM_Character::Reload(const FInputActionValue& value)
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->Reload();	// 현재 무기 재장전
+		MyGM->UpdateAmmo(CurrentWeapon->CurrentAmmo, CurrentWeapon->MaxAmmo);	// 탄약 표시 위젯 업데이트
 	}
 }
 
@@ -376,6 +348,10 @@ void AGM_Character::UpdateMuzzleTransform()
 	MuzzleSocketRotation = GetMesh()->GetSocketRotation("Muzzle");
 }
 
+void AGM_Character::StopMovement()
+{
+	GetCharacterMovement()->Velocity = FVector::ZeroVector;
+}
 
 void AGM_Character::OnDeath()
 {

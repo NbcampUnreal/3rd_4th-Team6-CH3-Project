@@ -67,10 +67,11 @@ void AWeaponProjectile::OnHitBullet(UPrimitiveComponent* OverlappedComp,
 	}
 }
 
+// 데미지 적용
 void AWeaponProjectile::OnHitDamage(AActor* DamagedActor, float BaseDamage, 
 	AActor* DamageCauser, TSubclassOf<UDamageType> DamageTypeClass)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Called OnHitDamage"))
+	//UE_LOG(LogTemp, Warning, TEXT("Called OnHitDamage"))
 	UGameplayStatics::ApplyDamage(
 		DamagedActor,
 		BaseDamage,

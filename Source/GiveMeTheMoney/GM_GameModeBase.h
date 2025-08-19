@@ -5,7 +5,11 @@
 #include "GameFramework/GameModeBase.h"
 #include "GM_GameModeBase.generated.h"
 
-class AGM_SpawnVolume;	// 스폰 볼륨 전방선언
+//전방선언
+class AGM_SpawnVolume;	// 스폰 볼륨 
+class UGM_GameHUDWidget;	// UI 
+class AGM_GameStateBase;
+class AGM_Character;
 
 UCLASS()
 class GIVEMETHEMONEY_API AGM_GameModeBase : public AGameModeBase
@@ -27,10 +31,18 @@ public:
 	void OnCoinCollected();
 	void AddCoin(int32 Amount);
 	void OnEnemyKilled();
+	void StartWave();
+	void UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game Wave")
 	TSubclassOf<AGM_SpawnVolume> EnemyClass;	// AI 액터 클래스저장
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UGM_GameHUDWidget> HUDWidgetClass;	//UI 위젯클래스 저장
+
+	UPROPERTY()
+	TObjectPtr<UGM_GameHUDWidget> HUDWidget;	// UI 인스턴스
 
 	UPROPERTY(EditDefaultsOnly, Category = "Game Wave")
 	float WaveDuration;
@@ -47,7 +59,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Game Wave")
 	int32 MinKillCount;
 
-	void StartWave();
+	AGM_Character* PlayerCharacter;
+
+
 	void EndWave(bool bIsCompleted);
 	void OnWaveTimeUp();
 	void SpawnEnemies();
@@ -58,4 +72,7 @@ private:
 	
 	FTimerHandle WaveTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
+
+	AGM_GameStateBase* GetGS() const;	//GameModeBase 반환
+	AGM_GameStateBase* MyGS;
 };

@@ -32,7 +32,7 @@ void AGM_AICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Warning, TEXT("AI character has been spawned."));
+	//UE_LOG(LogTemp, Warning, TEXT("AI character has been spawned."));
 }
 
 void AGM_AICharacter::Attack()
@@ -51,7 +51,7 @@ void AGM_AICharacter::Attack()
 	OnHitAttack();
 	AnimInst->Montage_SetEndDelegate(EndDelegate, AttackMontage);
 
-	UE_LOG(LogTemp, Log, TEXT("[%s] Attack Montage Played"), *GetName());
+	//UE_LOG(LogTemp, Log, TEXT("[%s] Attack Montage Played"), *GetName());
 
 
 	auto AnimInstance = Cast<UGM_AIAnimInstance>(GetMesh()->GetAnimInstance());
@@ -69,7 +69,7 @@ void AGM_AICharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrup
 
 void AGM_AICharacter::AttackEnd()
 {
-	UE_LOG(LogTemp, Warning, TEXT("[%s] Attack End"), *GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("[%s] Attack End"), *GetName());
 	OnAttackEnd.Broadcast();
 }
 
