@@ -6,7 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "GM_GameModeBase.h"
+#include "GameModes/GM_GameModeBase.h"
 
 // Sets default values
 AGM_Coin::AGM_Coin()

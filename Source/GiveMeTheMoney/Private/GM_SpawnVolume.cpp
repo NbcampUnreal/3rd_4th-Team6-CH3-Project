@@ -1,6 +1,6 @@
 #include "GM_SpawnVolume.h"
 #include "Components/BoxComponent.h"
-#include "GM_AICharacter.h"
+#include "AI/GM_AICharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values

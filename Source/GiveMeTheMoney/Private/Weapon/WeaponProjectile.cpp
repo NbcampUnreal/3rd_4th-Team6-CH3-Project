@@ -1,7 +1,6 @@
 #include "Weapon/WeaponProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
-#include "Weapon/Dummy_WeaponCharacter.h"
 #include "Kismet/GameplayStatics.h"
 /*
 	총알 발사 클래스 
